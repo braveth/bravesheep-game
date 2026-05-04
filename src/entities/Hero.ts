@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { WORLD } from '../config/world'
 import { HERO } from '../config/hero'
+import { TEX } from '../config/textures'
 import type { VirtualInput } from '../ui/MobileControls'
 
 type HeroState = 'idle' | 'run' | 'jump' | 'fall'
@@ -33,7 +34,7 @@ export class Hero {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene  = scene
-    this.sprite = scene.physics.add.sprite(x, y, 'hero')
+    this.sprite = scene.physics.add.sprite(x, y, TEX.HERO)
 
     const body = this.body()
     body.setGravityY(HERO.GRAVITY)

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { WOLF } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { PackCharger } from './base/PackCharger'
 
@@ -11,7 +12,7 @@ import { PackCharger } from './base/PackCharger'
 export class Wolf extends PackCharger {
   constructor(group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - WOLF.SPRITE_H / 2
-    super(group, x, y, 'wolf', WOLF.HP)
+    super(group, x, y, TEX.WOLF, WOLF.HP)
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(WOLF.HIT_W, WOLF.HIT_H)

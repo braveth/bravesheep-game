@@ -1,9 +1,5 @@
-/**
- * Boot scene — generates all placeholder textures programmatically so P0
- * runs with zero external assets. Replace generateTexture calls with real
- * sprite-sheet loads here when art is ready.
- */
 import Phaser from 'phaser'
+import { TEX } from '../config/textures'
 
 export class Boot extends Phaser.Scene {
   constructor() {
@@ -13,12 +9,12 @@ export class Boot extends Phaser.Scene {
   create(): void {
     this.makeHeroTexture()
     this.makeGroundTexture()
-    this.makeHillsTexture()
+    this.makeRuralTexture()
     this.makeWolfTexture()
     this.makeFatCatTexture()
     this.makeLaserTexture()
     this.makeHpIconTexture()
-    this.makeUrbanBgTexture()
+    this.makeUrbanTexture()
     this.makeHelicopterTexture()
     this.makeNinjaTexture()
     this.makeShurikenTexture()
@@ -68,7 +64,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0xaa0000)
     g.fillTriangle(7, 22, 3, 38, 7, 34)
 
-    g.generateTexture('hero', 32, 48)
+    g.generateTexture(TEX.HERO, 32, 48)
     g.destroy()
   }
 
@@ -96,12 +92,12 @@ export class Boot extends Phaser.Scene {
     g.fillCircle(24, 22, 2)
     g.fillCircle(16, 28, 2)
 
-    g.generateTexture('ground', 32, 32)
+    g.generateTexture(TEX.GROUND, 32, 32)
     g.destroy()
   }
 
-  // ── Hills parallax tile: 320×80 px ─────────────────────────────────────
-  private makeHillsTexture(): void {
+  // ── Rural parallax tile: 320×80 px ─────────────────────────────────────
+  private makeRuralTexture(): void {
     const g = this.make.graphics({ x: 0, y: 0 }, false)
     const H = 80
 
@@ -118,7 +114,7 @@ export class Boot extends Phaser.Scene {
     g.fillCircle(180, H - 24, 58)
     g.fillCircle(290, H - 16, 38)
 
-    g.generateTexture('hills', 320, H)
+    g.generateTexture(TEX.RURAL_BG, 320, H)
     g.destroy()
   }
 
@@ -174,7 +170,7 @@ export class Boot extends Phaser.Scene {
     g.fillRect(23, 28, 5, 8)   // front-left
     g.fillRect(30, 29, 5, 7)   // front-right
 
-    g.generateTexture('wolf', 48, 36)
+    g.generateTexture(TEX.WOLF, 48, 36)
     g.destroy()
   }
 
@@ -241,7 +237,7 @@ export class Boot extends Phaser.Scene {
     g.fillRect(7,  36, 8, 4)
     g.fillRect(21, 36, 8, 4)
 
-    g.generateTexture('fatcat', 36, 40)
+    g.generateTexture(TEX.FAT_CAT, 36, 40)
     g.destroy()
   }
 
@@ -256,7 +252,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0xffffff)  // hot core
     g.fillRect(0, 1, 56, 1)
 
-    g.generateTexture('laser', 56, 4)
+    g.generateTexture(TEX.LASER, 56, 4)
     g.destroy()
   }
 
@@ -274,13 +270,13 @@ export class Boot extends Phaser.Scene {
     g.fillRect(4, 0, 4, 3)
     g.fillTriangle(4, 5, 8, 15, 10, 5)
 
-    g.generateTexture('hp-icon', 20, 20)
+    g.generateTexture(TEX.HP_ICON, 20, 20)
     g.destroy()
   }
 
   // ── Urban background tile: 320×80 px (transparent bg, building silhouettes) ─
   // Sky colour comes from Game's skyBg rectangle; only the shapes are drawn here.
-  private makeUrbanBgTexture(): void {
+  private makeUrbanTexture(): void {
     const g = this.make.graphics({ x: 0, y: 0 }, false)
     const H = 80
 
@@ -316,7 +312,7 @@ export class Boot extends Phaser.Scene {
     g.fillRect(223, 24, 4, 3)
     g.fillRect(249, 36, 4, 3)
 
-    g.generateTexture('city-bg', 320, H)
+    g.generateTexture(TEX.URBAN_BG, 320, H)
     g.destroy()
   }
 
@@ -357,7 +353,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0x2255aa, 0.4)
     g.fillEllipse(14, 16, 18, 12)
 
-    g.generateTexture('helicopter', 64, 32)
+    g.generateTexture(TEX.HELICOPTER, 64, 32)
     g.destroy()
   }
 
@@ -395,7 +391,7 @@ export class Boot extends Phaser.Scene {
     g.fillRect(17, 8, 2, 10)
     g.fillTriangle(17, 8, 19, 8, 18, 4)
 
-    g.generateTexture('ninja', 20, 32)
+    g.generateTexture(TEX.NINJA, 20, 32)
     g.destroy()
   }
 
@@ -417,7 +413,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0x333333)
     g.fillCircle(6, 6, 2)
 
-    g.generateTexture('shuriken', 12, 12)
+    g.generateTexture(TEX.SHURIKEN, 12, 12)
     g.destroy()
   }
 
@@ -452,7 +448,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0x88ccff)
     g.fillEllipse(58, 16, 16, 8)
 
-    g.generateTexture('airplane', 80, 32)
+    g.generateTexture(TEX.AIRPLANE, 80, 32)
     g.destroy()
   }
 
@@ -477,7 +473,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0xffaa00)
     g.fillRect(3, 9, 10, 3)
 
-    g.generateTexture('bomb', 16, 20)
+    g.generateTexture(TEX.BOMB, 16, 20)
     g.destroy()
   }
 
@@ -519,7 +515,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0xff2200)
     g.fillRect(3, 14, 5, 6)
 
-    g.generateTexture('limo', 96, 36)
+    g.generateTexture(TEX.LIMO, 96, 36)
     g.destroy()
   }
 
@@ -564,7 +560,7 @@ export class Boot extends Phaser.Scene {
     g.fillStyle(0xffffaa)
     g.fillRect(72, 10, 5, 8)
 
-    g.generateTexture('bus', 80, 48)
+    g.generateTexture(TEX.BUS, 80, 48)
     g.destroy()
 
     // ── Boss Wolf (80×64) ─────────────────────────────────────────────────
@@ -581,7 +577,7 @@ export class Boot extends Phaser.Scene {
       bw.fillRect(12, 52, 10, 12); bw.fillRect(28, 52, 10, 12)
       bw.fillRect(44, 52, 10, 12); bw.fillRect(60, 52, 10, 12)
       bw.fillStyle(0xff4400); bw.fillRect(50, 14, 2, 8)
-      bw.generateTexture('boss-wolf', 80, 64)
+      bw.generateTexture(TEX.BOSS_WOLF, 80, 64)
       bw.destroy()
     }
 
@@ -601,7 +597,7 @@ export class Boot extends Phaser.Scene {
       bc.fillStyle(0x888888); bc.fillRect(64, 28, 16, 8)
       bc.fillStyle(0xff2200); bc.fillRect(76, 30, 8, 4)
       bc.fillStyle(0x1a1a2e); bc.fillRect(16, 52, 12, 12); bc.fillRect(52, 52, 12, 12)
-      bc.generateTexture('boss-cat', 80, 64)
+      bc.generateTexture(TEX.BOSS_CAT, 80, 64)
       bc.destroy()
     }
   }

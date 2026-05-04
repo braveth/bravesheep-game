@@ -13,6 +13,7 @@ import {
   WOLF, FAT_CAT, HELICOPTER, NINJA, AIRPLANE, BOMB, LIMO, BUS, BOSS,
 } from '../config/enemies'
 import { WORLD } from '../config/world'
+import { TEX } from '../config/textures'
 
 type LevelConfig = {
   waveInterval:  number
@@ -150,7 +151,7 @@ export class EnemySpawner {
     const laserY = this.boss.update(time)
     if (laserY !== -1) {
       const laser = this.bossLaserGroup.create(
-        this.boss.sprite.x - BOSS.SPRITE_W / 2, laserY, 'laser',
+        this.boss.sprite.x - BOSS.SPRITE_W / 2, laserY, TEX.LASER,
       ) as Phaser.Physics.Arcade.Sprite
       const body = laser.body as Phaser.Physics.Arcade.Body
       body.setSize(FAT_CAT.LASER_W, FAT_CAT.LASER_H)
@@ -267,7 +268,7 @@ export class EnemySpawner {
    */
   private fireLaser(shooter: Phaser.Physics.Arcade.Sprite, shotType: 0 | 1, heroX: number): void {
     const fireY = shooter.y + FAT_CAT.LASER_EYE_OFFSET_Y
-    const laser = this.laserGroup.create(shooter.x, fireY, 'laser') as Phaser.Physics.Arcade.Sprite
+    const laser = this.laserGroup.create(shooter.x, fireY, TEX.LASER) as Phaser.Physics.Arcade.Sprite
     const body  = laser.body as Phaser.Physics.Arcade.Body
     body.setAllowGravity(false)
 

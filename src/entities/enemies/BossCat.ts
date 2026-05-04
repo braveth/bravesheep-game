@@ -1,11 +1,12 @@
 import Phaser from 'phaser'
+import { TEX } from '../../config/textures'
 import { BaseBoss } from './base/BaseBoss'
 
 export class BossCat extends BaseBoss {
   private nextFireTime = 0
 
   constructor(group: Phaser.Physics.Arcade.Group, heroRef: { x: number }) {
-    super(group, 'boss-cat', heroRef)
+    super(group, TEX.BOSS_CAT, heroRef)
   }
 
   protected onEntered(time: number): void {

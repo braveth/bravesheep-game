@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { NINJA } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 
 /**
@@ -20,7 +21,7 @@ export class Ninja {
     // +1 = move right (hero is right of drop), -1 = move left
     this.moveDir = heroX >= x ? 1 : -1
 
-    this.sprite = group.create(x, dropY, 'ninja') as Phaser.Physics.Arcade.Sprite
+    this.sprite = group.create(x, dropY, TEX.NINJA) as Phaser.Physics.Arcade.Sprite
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(NINJA.HIT_W, NINJA.HIT_H)

@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { FAT_CAT } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { LaserTurret } from './base/LaserTurret'
 
@@ -11,7 +12,7 @@ import { LaserTurret } from './base/LaserTurret'
 export class FatCat extends LaserTurret {
   constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - FAT_CAT.SPRITE_H / 2
-    super(scene, group, x, y, 'fatcat', FAT_CAT.HP)
+    super(scene, group, x, y, TEX.FAT_CAT, FAT_CAT.HP)
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(FAT_CAT.HIT_W, FAT_CAT.HIT_H)

@@ -9,8 +9,6 @@
 
 import { RuralChapter } from '../chapters/RuralChapter'
 import { UrbanChapter } from '../chapters/UrbanChapter'
-import { RuralBg }      from '../chapters/RuralBg'
-import { UrbanBg }      from '../chapters/UrbanBg'
 import { BossWolf }     from '../entities/enemies/BossWolf'
 import { BossCat }      from '../entities/enemies/BossCat'
 import { Wolf }         from '../entities/enemies/Wolf'
@@ -24,16 +22,6 @@ import type { BaseChapter } from '../chapters/BaseChapter'
 export type { BaseChapter }
 
 export const CHAPTERS: readonly BaseChapter[] = [
-  new RuralChapter({
-    name:    'Rural',
-    bg:      RuralBg,
-    boss:    BossWolf,
-    enemies: [Wolf, FatCat, Helicopter],
-  }),
-  new UrbanChapter({
-    name:    'Urban',
-    bg:      UrbanBg,
-    boss:    BossCat,
-    enemies: [Limo, Bus, Airplane],
-  }),
+  new RuralChapter({ name: 'Rural', boss: BossWolf, enemies: [Wolf, FatCat, Helicopter] }),
+  new UrbanChapter({ name: 'Urban', boss: BossCat,  enemies: [Limo, Bus, Airplane] }),
 ]

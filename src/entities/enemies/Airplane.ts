@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { AIRPLANE } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { AirVehicle } from './base/AirVehicle'
 
 /**
@@ -11,7 +12,7 @@ import { AirVehicle } from './base/AirVehicle'
 export class Airplane extends AirVehicle {
   constructor(group: Phaser.Physics.Arcade.Group, heroX: number) {
     super(
-      group, heroX, AIRPLANE.FLY_Y, 'airplane',
+      group, heroX, AIRPLANE.FLY_Y, TEX.AIRPLANE,
       AIRPLANE.HP, AIRPLANE.SPEED, AIRPLANE.DROP_LEAD,
       50,  // spawnOffset
     )

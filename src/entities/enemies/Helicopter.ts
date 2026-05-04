@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { HELICOPTER } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { AirVehicle } from './base/AirVehicle'
 
 /**
@@ -12,7 +13,7 @@ export class Helicopter extends AirVehicle {
   constructor(group: Phaser.Physics.Arcade.Group, heroX: number) {
     const flyY = Phaser.Math.Between(HELICOPTER.FLY_Y_MIN, HELICOPTER.FLY_Y_MAX)
     super(
-      group, heroX, flyY, 'helicopter',
+      group, heroX, flyY, TEX.HELICOPTER,
       HELICOPTER.HP, HELICOPTER.SPEED, HELICOPTER.DROP_LEAD,
       80,  // spawnOffset: how far past screen edge
     )

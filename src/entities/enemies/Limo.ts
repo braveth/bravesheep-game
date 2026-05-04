@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { LIMO } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { PackCharger } from './base/PackCharger'
 
@@ -10,7 +11,7 @@ import { PackCharger } from './base/PackCharger'
 export class Limo extends PackCharger {
   constructor(group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - LIMO.SPRITE_H / 2
-    super(group, x, y, 'limo', LIMO.HP)
+    super(group, x, y, TEX.LIMO, LIMO.HP)
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(LIMO.HIT_W, LIMO.HIT_H)

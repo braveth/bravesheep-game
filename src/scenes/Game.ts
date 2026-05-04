@@ -8,6 +8,7 @@ import { DevPanel } from '../ui/DevPanel'
 import { MobileControls } from '../ui/MobileControls'
 import { WORLD } from '../config/world'
 import { BOSS, DIFFICULTY } from '../config/enemies'
+import { TEX } from '../config/textures'
 
 export class Game extends Phaser.Scene {
   private hero!:        Hero
@@ -45,7 +46,7 @@ export class Game extends Phaser.Scene {
       WORLD.GROUND_Y - 40,
       WORLD.WIDTH,
       80,
-      'hills',
+      TEX.RURAL_BG,
     )
 
     // ── Ground visual ─────────────────────────────────────────────────────
@@ -54,7 +55,7 @@ export class Game extends Phaser.Scene {
       WORLD.GROUND_Y + WORLD.GROUND_HEIGHT / 2,
       WORLD.WIDTH,
       WORLD.GROUND_HEIGHT,
-      'ground',
+      TEX.GROUND,
     )
 
     // ── Ground physics body (static, invisible) ───────────────────────────

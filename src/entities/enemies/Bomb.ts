@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { BOMB, AIRPLANE } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 
 /**
@@ -15,7 +16,7 @@ export class Bomb {
   private wasOnGround  = false
 
   constructor(group: Phaser.Physics.Arcade.Group, dropX: number, heroX: number) {
-    this.sprite = group.create(dropX, AIRPLANE.FLY_Y + 20, 'bomb') as Phaser.Physics.Arcade.Sprite
+    this.sprite = group.create(dropX, AIRPLANE.FLY_Y + 20, TEX.BOMB) as Phaser.Physics.Arcade.Sprite
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(BOMB.HIT_W, BOMB.HIT_H)

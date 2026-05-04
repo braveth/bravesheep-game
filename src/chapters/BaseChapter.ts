@@ -1,8 +1,11 @@
 import Phaser from 'phaser'
-import type { BaseBg }   from './BaseBg'
 import type { BaseBoss } from '../entities/enemies/base/BaseBoss'
 
-export type BgConstructor = new () => BaseBg
+export interface IBg {
+  readonly scrollMult: number
+  readonly skyColor:   number
+  apply(sprite: Phaser.GameObjects.TileSprite): void
+}
 
 export type BossConstructor = new (
   group:   Phaser.Physics.Arcade.Group,
@@ -14,20 +17,19 @@ export type EnemyClass = new (...args: any[]) => object
 
 export interface ChapterParams {
   name:    string
-  bg:      BgConstructor
   boss:    BossConstructor
   enemies: readonly EnemyClass[]
 }
 
 export abstract class BaseChapter {
+  abstract readonly bg: IBg
+
   readonly name:    string
-  readonly bg:      BaseBg
   readonly boss:    BossConstructor
   readonly enemies: readonly EnemyClass[]
 
   constructor(p: ChapterParams) {
     this.name    = p.name
-    this.bg      = new p.bg()
     this.boss    = p.boss
     this.enemies = p.enemies
   }

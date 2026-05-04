@@ -1,5 +1,3 @@
-// All tunable game constants live here — single source of truth.
-// Tweak these values to adjust game feel without touching game logic.
 export const WORLD = {
   WIDTH:  960,
   HEIGHT: 540,

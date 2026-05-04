@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { BUS } from '../../config/enemies'
+import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { LaserTurret } from './base/LaserTurret'
 
@@ -11,7 +12,7 @@ import { LaserTurret } from './base/LaserTurret'
 export class Bus extends LaserTurret {
   constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - BUS.SPRITE_H / 2
-    super(scene, group, x, y, 'bus', BUS.HP)
+    super(scene, group, x, y, TEX.BUS, BUS.HP)
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(BUS.HIT_W, BUS.HIT_H)
