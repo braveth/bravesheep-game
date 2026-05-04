@@ -82,7 +82,7 @@ export abstract class AirVehicle extends BaseEnemy {
       if (past) {
         const schedule = [time]
         for (let i = 1; i < count; i++) {
-          schedule.push(schedule[i - 1] + Phaser.Math.Between(intervalMin, intervalMax))
+          schedule.push(schedule[i - 1] + intervalMin)
         }
         this.dropSchedule = schedule
       }

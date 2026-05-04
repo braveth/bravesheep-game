@@ -16,7 +16,7 @@ export class FatCat extends LaserTurret {
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(FAT_CAT.HIT_W, FAT_CAT.HIT_H)
     body.setOffset((FAT_CAT.SPRITE_W - FAT_CAT.HIT_W) / 2, FAT_CAT.SPRITE_H - FAT_CAT.HIT_H)
-    body.setGravityY(1200)
+    body.setAllowGravity(false)
     body.setCollideWorldBounds(false)
 
     this.sprite.setFlipX(true)

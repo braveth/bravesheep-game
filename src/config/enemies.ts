@@ -18,7 +18,7 @@ export const FAT_CAT = {
   SPRITE_H:         40,
   HIT_W:            24,
   HIT_H:            34,
-  LASER_SPEED:     380,
+  LASER_SPEED:     620,
   LASER_W:          56,
   LASER_H:           4,
   LASER_EYE_OFFSET_Y: -10,  // px above sprite centre -> ~eye height
@@ -40,8 +40,7 @@ export const HELICOPTER = {
   HOVER_DURATION: 1000,    // (unused -- no hover, kept for reference)
   NINJA_DROP_COUNT:  3,    // always drop exactly 3
   DROP_LEAD:       320,    // px from hero where first ninja is released
-  DROP_INTERVAL_MIN: 180, // ms between consecutive ninja releases
-  DROP_INTERVAL_MAX: 360,
+  DROP_INTERVAL:   150,   // ms between consecutive ninja releases (constant, scaled by speedFactor)
 } as const
 
 export const NINJA = {
@@ -67,8 +66,7 @@ export const AIRPLANE = {
   SPEED:            80,    // faster than before
   BOMB_DROP_COUNT:   3,    // drops 3 bombs per pass (sequential)
   DROP_LEAD:       300,    // px from hero where first bomb is released
-  DROP_INTERVAL_MIN: 180, // ms between consecutive bomb releases
-  DROP_INTERVAL_MAX: 360,
+  DROP_INTERVAL:   150,   // ms between consecutive bomb releases (constant, scaled by speedFactor)
 } as const
 
 export const BOMB = {

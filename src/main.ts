@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { Boot } from './scenes/Boot'
+import { Home } from './scenes/Home'
 import { Game } from './scenes/Game'
 import { Pause } from './scenes/Pause'
 import { GameOver } from './scenes/GameOver'
@@ -25,5 +26,5 @@ new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
 
-  scene: [Boot, Game, Pause, GameOver, Win],
+  scene: [Boot, Home, Game, Pause, GameOver, Win],
 })

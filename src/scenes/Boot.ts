@@ -26,7 +26,7 @@ export class Boot extends Phaser.Scene {
     this.makeBombTexture()
     this.makeLimoTexture()
     this.makeBusTexture()
-    this.scene.start('Game')
+    this.scene.start('Home')
   }
 
   // ── Hero: 32×48 px, origin (0.5, 0.5) ──────────────────────────────────

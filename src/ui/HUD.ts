@@ -41,7 +41,7 @@ export class HUD {
 
   setHP(hp: number): void {
     this.hpIcons.forEach((icon, i) => {
-      icon.setAlpha(i < hp ? 1 : 0.25)
+      icon.setVisible(i < hp)
     })
   }
 

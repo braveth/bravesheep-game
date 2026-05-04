@@ -43,10 +43,13 @@ export abstract class LaserTurret extends BaseEnemy {
     if (!this.scheduleBuilt) {
       this.scheduleBuilt = true
 
-      // Quadratic-decreasing intervals scaled to fit in half a screen.
+      // Gaps between shots are quadratic-decreasing (largest gap first, tightest last).
+      // Shot 0 fires immediately; only inter-shot gaps consume the window.
+      // gapSum = sum of j² for j=1..(n-1) = (n-1)*n*(2n-1)/6
       const window  = FAT_CAT.LASER_FIRE_WINDOW * speedFactor
-      const kSumSq  = maxShots * (maxShots + 1) * (2 * maxShots + 1) / 6
-      const si      = Math.max(FAT_CAT.LASER_MIN_GAP, Math.floor(window / kSumSq))
+      const n       = maxShots
+      const gapSum  = (n - 1) * n * (2 * n - 1) / 6
+      const si      = gapSum > 0 ? window / gapSum : 0
 
       // Build balanced shot-type array: alternating 0/1 then Fisher-Yates shuffle.
       // This guarantees both types appear every encounter.
@@ -59,10 +62,11 @@ export abstract class LaserTurret extends BaseEnemy {
         ;[shotTypes[k], shotTypes[j]] = [shotTypes[j], shotTypes[k]]
       }
 
+      // Push shot 0 immediately, then add descending quadratic gap before each next shot.
       let t = time
       for (let k = 0; k < maxShots; k++) {
-        t += (maxShots - k) * (maxShots - k) * si
         this.fireSchedule.push({ at: t, shot: shotTypes[k] })
+        t += (n - 1 - k) * (n - 1 - k) * si   // gap after this shot; 0 after last
       }
     }
 

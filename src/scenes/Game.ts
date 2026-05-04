@@ -2,30 +2,29 @@ import Phaser from 'phaser'
 import { Hero } from '../entities/Hero'
 import { EnemySpawner } from '../systems/EnemySpawner'
 import { DifficultyManager } from '../systems/DifficultyManager'
+import { ProgressionManager } from '../systems/ProgressionManager'
 import { HUD } from '../ui/HUD'
 import { DevPanel } from '../ui/DevPanel'
+import { MobileControls } from '../ui/MobileControls'
 import { WORLD } from '../config/physics'
-import { BOSS } from '../config/enemies'
+import { BOSS, DIFFICULTY } from '../config/enemies'
 
 export class Game extends Phaser.Scene {
   private hero!:        Hero
   private spawner!:     EnemySpawner
   private difficulty!:  DifficultyManager
+  private progression!: ProgressionManager
   private hud!:         HUD
 
   private groundVisual!: Phaser.GameObjects.TileSprite
   private groundBody!:   Phaser.GameObjects.Rectangle
-  private hillsVisual!:  Phaser.GameObjects.TileSprite
 
   private scrollOffset = 0
 
-  private cityVisual!:  Phaser.GameObjects.TileSprite
-  private skyBg!:       Phaser.GameObjects.Rectangle
-  private biome:        'rural' | 'urban' = 'rural'
-  private bossMode      = false
-  private bossDefeated  = false
+  private skyBg!:    Phaser.GameObjects.Rectangle
+  private activeBg!: Phaser.GameObjects.TileSprite
 
-  // Dev-only overlay (undefined in production)
+  private mobileControls?: MobileControls
   private devPanel?: DevPanel
 
   constructor() {
@@ -40,23 +39,14 @@ export class Game extends Phaser.Scene {
       WORLD.WIDTH, WORLD.HEIGHT,
       0x5c94fc,
     ).setDepth(-10)
-    // ── Background layers ─────────────────────────────────────────────────
-    this.hillsVisual = this.add.tileSprite(
+    // ── Background layer (texture swapped per chapter) ────────────────────
+    this.activeBg = this.add.tileSprite(
       WORLD.WIDTH / 2,
       WORLD.GROUND_Y - 40,
       WORLD.WIDTH,
       80,
       'hills',
     )
-
-    // ── Urban parallax layer (hidden until biome = urban) ────────────────
-    this.cityVisual = this.add.tileSprite(
-      WORLD.WIDTH / 2,
-      WORLD.GROUND_Y - 40,
-      WORLD.WIDTH,
-      80,
-      'city-bg',
-    ).setVisible(false)
 
     // ── Ground visual ─────────────────────────────────────────────────────
     this.groundVisual = this.add.tileSprite(
@@ -81,8 +71,9 @@ export class Game extends Phaser.Scene {
     this.physics.add.existing(this.groundBody, true)
 
     // ── Systems ───────────────────────────────────────────────────────────
-    this.difficulty = new DifficultyManager()
-    this.spawner    = new EnemySpawner(this, this.groundBody)
+    this.difficulty  = new DifficultyManager()
+    this.progression = new ProgressionManager()
+    this.spawner     = new EnemySpawner(this, this.groundBody)
 
     // ── Hero ──────────────────────────────────────────────────────────────
     this.hero = new Hero(this, 200, Hero.spawnY())
@@ -191,6 +182,9 @@ export class Game extends Phaser.Scene {
     this.hud = new HUD(this, this.hero.maxHp)
     this.hud.setHP(this.hero.hp)
 
+    // Apply initial chapter visuals (sets activeBg)
+    this.applyChapter()
+
     this.add.text(10, WORLD.HEIGHT - 26, '← → move   Space/↑ jump   ↓ duck', {
       fontSize: '12px',
       color: '#ffffff88',
@@ -202,18 +196,31 @@ export class Game extends Phaser.Scene {
       this.scene.launch('Pause')
     })
 
+    // Mobile controls
+    this.mobileControls = new MobileControls(this)
+    this.hero.setVirtualInput(this.mobileControls.input)
+
     if (import.meta.env.DEV) {
       this.devPanel = new DevPanel(
         this,
         () => {
           this.difficulty.reset()
           this.spawner.clearAll()
-          this.setBiome(this.biome === 'rural' ? 'urban' : 'rural')
+          this.progression.reset()
+          this.applyChapter()
         },
         () => {
-          this.difficulty.reset()
-          this.spawner.clearAll()
-          this.setBossMode(!this.bossMode)
+          const isBoss = this.progression.phase === 'boss'
+          if (isBoss) {
+            this.progression.bossDefeated()
+            this.spawner.clearBoss()
+            this.hud.hideBossBar()
+            this.difficulty.reset()
+            this.applyChapter()
+          } else {
+            this.progression.startBoss()
+            this.enterBossPhase()
+          }
         },
       )
     }
@@ -224,17 +231,13 @@ export class Game extends Phaser.Scene {
 
     // ── Difficulty ────────────────────────────────────────────────────────
     this.difficulty.update(delta)
-    const scrollSpeed    = this.difficulty.scrollSpeed
-    const effectiveScroll = this.bossMode ? 0 : scrollSpeed
+    const scrollSpeed     = this.difficulty.scrollSpeed
+    const effectiveScroll = this.progression.phase === 'boss' ? 0 : scrollSpeed
 
     // ── Scroll ────────────────────────────────────────────────────────────
     this.scrollOffset += effectiveScroll * dt
     this.groundVisual.tilePositionX = this.scrollOffset
-    if (this.biome === 'rural') {
-      this.hillsVisual.tilePositionX = this.scrollOffset * 0.3
-    } else {
-      this.cityVisual.tilePositionX  = this.scrollOffset * 0.15
-    }
+    this.activeBg.tilePositionX = this.scrollOffset * this.progression.chapter.bg.scrollMult
 
     // ── Hero ──────────────────────────────────────────────────────────────
     this.hero.update(time, delta)
@@ -252,20 +255,30 @@ export class Game extends Phaser.Scene {
         packCount:     this.difficulty.packCount,
         packSpeedMult: this.difficulty.packSpeedMult,
         speedFactor:   this.difficulty.speedFactor,
+        enemies:      this.progression.chapter.enemies,
       },
     )
 
     // ── HUD ───────────────────────────────────────────────────────────────
     this.hud.setDistance(this.difficulty.metres)
     this.hud.setLevel(this.difficulty.level)
-    if (this.bossMode) this.hud.updateBossBar(this.spawner.bossHP)
+    if (this.progression.phase === 'boss') this.hud.updateBossBar(this.spawner.bossHP)
 
-    // ── Win: boss defeated ────────────────────────────────────────────────
-    if (this.bossMode && !this.bossDefeated && !this.spawner.bossAlive && this.spawner.bossHP <= 0) {
-      this.bossDefeated = true
-      this.time.delayedCall(800, () => {
-        this.scene.start('Win', { metres: this.difficulty.metres, level: this.difficulty.level })
-      })
+    // ── Runner: auto-enter boss when difficulty maxes ─────────────────────
+    if (this.progression.phase === 'runner' && this.difficulty.level >= DIFFICULTY.levelMax) {
+      this.progression.startBoss()
+      this.enterBossPhase()
+    }
+
+    // ── Boss: detect defeat → next chapter ───────────────────────────────
+    if (this.progression.phase === 'boss' && !this.spawner.bossAlive && this.spawner.bossHP <= 0) {
+      if (this.progression.bossDefeated()) {
+        this.spawner.clearBoss()
+        this.hud.hideBossBar()
+        this.difficulty.reset()
+        this.spawner.clearAll()
+        this.applyChapter()
+      }
     }
 
     // ── Game over ─────────────────────────────────────────────────────────
@@ -289,8 +302,8 @@ export class Game extends Phaser.Scene {
         level:         this.difficulty.level,
         nextLevelIn:   this.difficulty.nextLevelIn,
         metres:        this.difficulty.metres,
-        biome:         this.biome,
-        bossMode:      this.bossMode,
+        bossMode:      this.progression.phase === 'boss',
+        biome:         this.progression.chapter.name,
         heroState:     this.hero.currentState,
         heroVx:        b.velocity.x,
         heroVy:        b.velocity.y,
@@ -299,29 +312,19 @@ export class Game extends Phaser.Scene {
     }
   }
 
-  // ── Biome switching ───────────────────────────────────────────────
-  private setBiome(biome: 'rural' | 'urban'): void {
-    this.biome = biome
-    this.spawner.setBiome(biome)
-    const rural = biome === 'rural'
-    this.hillsVisual.setVisible(rural)
-    this.cityVisual.setVisible(!rural)
-    this.skyBg.setFillStyle(rural ? 0x5c94fc : 0x0d1020)
-    this.devPanel?.setBiomeLabel(rural ? '[Rural]' : '[Urban]')
+  // ── Apply chapter visuals + spawner ───────────────────────────────────
+  private applyChapter(): void {
+    const chapter = this.progression.chapter
+    chapter.bg.apply(this.activeBg)
+    this.skyBg.setFillStyle(chapter.bg.skyColor)
+    this.devPanel?.setBiomeLabel(`[${chapter.name}]`)
   }
 
-  // ── Boss mode ───────────────────────────────────────────────────
-  private setBossMode(boss: boolean): void {
-    this.bossMode = boss
-    this.bossDefeated = false
-    this.devPanel?.setBossLabel(boss ? '[Boss]' : '[Runner]')
-    if (boss) {
-      this.spawner.clearAll()
-      this.spawner.spawnBoss(this.hero.sprite)
-      this.hud.showBossBar(this, BOSS.HP)
-    } else {
-      this.spawner.clearBoss()
-      this.hud.hideBossBar()
-    }
+  // ── Enter boss phase ──────────────────────────────────────────────
+  private enterBossPhase(): void {
+    this.spawner.clearAll()
+    this.spawner.spawnBoss(this.progression.chapter, this.hero.sprite)
+    this.hud.showBossBar(this, BOSS.HP)
+    this.devPanel?.setBossLabel('[Boss]')
   }
 }

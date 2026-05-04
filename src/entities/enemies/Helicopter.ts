@@ -30,10 +30,7 @@ export class Helicopter extends AirVehicle {
    * ninja, -1 otherwise.  Spawner drops a Ninja at this.sprite.x each time.
    */
   update(time: number, _heroX: number, scrollSpeed: number, dropCount: number, speedFactor: number): number {
-    return this.tickDrops(
-      time, scrollSpeed, HELICOPTER.SPEED,
-      HELICOPTER.DROP_INTERVAL_MIN * speedFactor, HELICOPTER.DROP_INTERVAL_MAX * speedFactor,
-      dropCount,
-    )
+    const iv = HELICOPTER.DROP_INTERVAL * speedFactor
+    return this.tickDrops(time, scrollSpeed, HELICOPTER.SPEED, iv, iv, dropCount)
   }
 }

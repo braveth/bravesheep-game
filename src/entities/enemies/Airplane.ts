@@ -29,10 +29,7 @@ export class Airplane extends AirVehicle {
    * bomb, -1 otherwise.  Spawner drops a Bomb at this.sprite.x each time.
    */
   update(time: number, _heroX: number, scrollSpeed: number, dropCount: number, speedFactor: number): number {
-    return this.tickDrops(
-      time, scrollSpeed, AIRPLANE.SPEED,
-      AIRPLANE.DROP_INTERVAL_MIN * speedFactor, AIRPLANE.DROP_INTERVAL_MAX * speedFactor,
-      dropCount,
-    )
+    const iv = AIRPLANE.DROP_INTERVAL * speedFactor
+    return this.tickDrops(time, scrollSpeed, AIRPLANE.SPEED, iv, iv, dropCount)
   }
 }

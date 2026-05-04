@@ -31,6 +31,12 @@ export class Pause extends Phaser.Scene {
       this.scene.start('Game')
     })
 
+    this.makeBtn(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 126, 'QUIT TO MENU', () => {
+      this.scene.stop()
+      this.scene.stop('Game')
+      this.scene.start('Home')
+    })
+
     this.input.keyboard!.once('keydown-ESC', () => {
       this.scene.resume('Game')
       this.scene.stop()

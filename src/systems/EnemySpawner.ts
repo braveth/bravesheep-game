@@ -7,7 +7,8 @@ import { Airplane }   from '../entities/enemies/Airplane'
 import { Bomb }       from '../entities/enemies/Bomb'
 import { Limo }       from '../entities/enemies/Limo'
 import { Bus }        from '../entities/enemies/Bus'
-import { Boss }       from '../entities/enemies/Boss'
+import { BaseBoss }   from '../entities/enemies/base/BaseBoss'
+import type { BaseChapter, EnemyClass } from '../chapters/BaseChapter'
 import {
   WOLF, FAT_CAT, HELICOPTER, NINJA, AIRPLANE, BOMB, LIMO, BUS, BOSS,
 } from '../config/enemies'
@@ -20,6 +21,7 @@ type LevelConfig = {
   packCount:     number
   packSpeedMult: number
   speedFactor:   number   // baseScrollSpeed / currentScrollSpeed — scales all timings
+  enemies:      readonly EnemyClass[]  // enemy class constructors for this chapter
 }
 
 export class EnemySpawner {
@@ -39,7 +41,6 @@ export class EnemySpawner {
   private bombShadows:      Phaser.GameObjects.Rectangle[] = []
 
   private scene: Phaser.Scene
-  private biome: 'rural' | 'urban' = 'rural'
 
   private wolves:      Wolf[]       = []
   private fatCats:     FatCat[]     = []
@@ -49,10 +50,11 @@ export class EnemySpawner {
   private bombs:       Bomb[]       = []
   private limos:       Limo[]       = []
   private buses:       Bus[]        = []
-  private boss:        Boss | null  = null
+  private boss:        BaseBoss | null = null
 
   private levelConfig: LevelConfig = {
     waveInterval: 5000, turretShots: 3, airDropCount: 3, packCount: 3, packSpeedMult: 1, speedFactor: 1,
+    enemies: [Wolf, FatCat, Helicopter],
   }
 
   private activeGroundGroups = 0
@@ -61,8 +63,11 @@ export class EnemySpawner {
   // Single wave timer: fires every WAVE_INTERVAL regardless of screen state.
   private nextWaveTime  = 2000
   private waveCleared   = true   // unused guard kept for clearAll() reset
-  // Last wave type spawned — excluded from next draw so the same type is never repeated.
-  private lastWaveType: string | null = null
+  // Last wave class spawned — excluded from next draw so the same type is never repeated.
+  private lastWaveClass: EnemyClass | null = null
+
+  // Dispatch table: enemy class constructor → spawn function
+  private readonly waveDispatch: Map<EnemyClass, () => void>
 
   constructor(scene: Phaser.Scene, groundBody: Phaser.GameObjects.Rectangle) {
     this.scene = scene
@@ -85,10 +90,15 @@ export class EnemySpawner {
     scene.physics.add.collider(this.ninjaGroup,  groundBody)
     scene.physics.add.collider(this.bombGroup,   groundBody)
     scene.physics.add.collider(this.bossGroup,   groundBody)
-  }
 
-  setBiome(biome: 'rural' | 'urban'): void {
-    this.biome = biome
+    this.waveDispatch = new Map<EnemyClass, () => void>([
+      [Wolf,       () => this.spawnWolfPack()],
+      [FatCat,     () => { this.fatCats.push(new FatCat(this.scene, this.fatCatGroup, WORLD.WIDTH + 20)); this.activeGroundGroups++ }],
+      [Helicopter, () => { this.helicopters.push(new Helicopter(this.helicopterGroup, this.lastHeroX)); this.activeAirGroups++ }],
+      [Limo,       () => this.spawnLimoPack()],
+      [Bus,        () => { this.buses.push(new Bus(this.scene, this.busGroup, WORLD.WIDTH + 24)); this.activeGroundGroups++ }],
+      [Airplane,   () => { this.airplanes.push(new Airplane(this.airplaneGroup, this.lastHeroX)); this.activeAirGroups++ }],
+    ])
   }
 
   /** Destroy all active enemies — called when entering/exiting boss arena. */
@@ -112,14 +122,14 @@ export class EnemySpawner {
     this.activeGroundGroups = 0
     this.activeAirGroups    = 0
     this.waveCleared        = true
-    this.lastWaveType       = null
+    this.lastWaveClass      = null
     this.nextWaveTime       = 0
   }
 
-  /** Spawn the boss for the current biome. */
-  spawnBoss(heroRef: { x: number }): void {
+  /** Spawn the boss for the current chapter. */
+  spawnBoss(chapter: BaseChapter, heroRef: { x: number }): void {
     if (this.boss) return  // already spawned
-    this.boss = new Boss(this.bossGroup, this.biome, heroRef)
+    this.boss = new chapter.boss(this.bossGroup, heroRef)
   }
 
   /** Remove the boss from the arena. */
@@ -137,7 +147,7 @@ export class EnemySpawner {
 
   private tickBoss(time: number, scrollSpeed: number): void {
     if (!this.boss) return
-    const laserY = this.boss.update(time, scrollSpeed)
+    const laserY = this.boss.update(time)
     if (laserY !== -1) {
       const laser = this.bossLaserGroup.create(
         this.boss.sprite.x - BOSS.SPRITE_W / 2, laserY, 'laser',
@@ -181,22 +191,11 @@ export class EnemySpawner {
     if (time < this.nextWaveTime) return
     this.nextWaveTime = time + this.levelConfig.waveInterval
 
-    // 3 types per biome. Pick equally, never repeat the last type.
-    const allTypes = this.biome === 'rural'
-      ? ['wolf', 'fatcat', 'helicopter']
-      : ['limo', 'bus', 'airplane']
-    const candidates = allTypes.filter(t => t !== this.lastWaveType)
-    const chosen = Phaser.Utils.Array.GetRandom(candidates) as string
-    this.lastWaveType = chosen
-
-    switch (chosen) {
-      case 'wolf':       this.spawnWolfPack();                              this.activeGroundGroups++; break
-      case 'fatcat':     this.fatCats.push(new FatCat(this.scene, this.fatCatGroup, WORLD.WIDTH + 20)); this.activeGroundGroups++; break
-      case 'helicopter': this.helicopters.push(new Helicopter(this.helicopterGroup, this.lastHeroX)); this.activeAirGroups++; break
-      case 'limo':       this.spawnLimoPack();                              this.activeGroundGroups++; break
-      case 'bus':        this.buses.push(new Bus(this.scene, this.busGroup, WORLD.WIDTH + 24)); this.activeGroundGroups++; break
-      case 'airplane':   this.airplanes.push(new Airplane(this.airplaneGroup, this.lastHeroX)); this.activeAirGroups++; break
-    }
+    const allTypes   = this.levelConfig.enemies
+    const candidates = allTypes.filter(t => t !== this.lastWaveClass)
+    const chosen     = Phaser.Utils.Array.GetRandom(candidates as EnemyClass[]) as EnemyClass
+    this.lastWaveClass = chosen
+    this.waveDispatch.get(chosen)?.()
   }
 
   private spawnWolfPack(): void {
@@ -207,7 +206,7 @@ export class EnemySpawner {
       const w = new Wolf(this.wolfGroup, x)
       w.packTrigger  = trigger
       w.isPackLeader = (i === 0)  // any unit works — they all enter screen together
-      w.chargeDelay  = i * i * WOLF.PACK_STAGGER * this.levelConfig.speedFactor
+      w.chargeDelay  = (i * i) / Math.max(1, count - 1) * WOLF.PACK_STAGGER * this.levelConfig.speedFactor
       w.chargeSpeed  = Math.round(WOLF.SPEED * this.levelConfig.packSpeedMult)
       this.wolves.push(w)
     }
@@ -221,7 +220,7 @@ export class EnemySpawner {
       const l = new Limo(this.limoGroup, x)
       l.packTrigger  = trigger
       l.isPackLeader = (i === 0)  // any unit works — they all enter screen together
-      l.chargeDelay  = i * i * LIMO.PACK_STAGGER * this.levelConfig.speedFactor
+      l.chargeDelay  = (i * i) / Math.max(1, count - 1) * LIMO.PACK_STAGGER * this.levelConfig.speedFactor
       l.chargeSpeed  = Math.round(LIMO.SPEED * this.levelConfig.packSpeedMult)
       this.limos.push(l)
     }

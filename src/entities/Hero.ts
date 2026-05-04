@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { HERO_PHYSICS, WORLD } from '../config/physics'
+import type { VirtualInput } from '../ui/MobileControls'
 
 type HeroState = 'idle' | 'run' | 'jump' | 'fall' | 'duck'
 
@@ -23,6 +24,8 @@ export class Hero {
 
   private state: HeroState = 'idle'
   private isDucking = false
+  private virtual: VirtualInput | null = null
+  private _prevVirtualUp = false
 
   // Damage
   hp    = 3
@@ -54,6 +57,8 @@ export class Hero {
     )
   }
 
+  setVirtualInput(v: VirtualInput | null): void { this.virtual = v }
+
   // ── Called every frame from Game scene ─────────────────────────────────
   update(time: number, delta: number): void {
     const body = this.body()
@@ -65,13 +70,15 @@ export class Hero {
     // Consume jump input once per press and store timestamp
     const jumpJustPressed =
       Phaser.Input.Keyboard.JustDown(this.jumpKey) ||
-      Phaser.Input.Keyboard.JustDown(this.cursors.up)
-    if (jumpJustPressed) this.jumpPressedTime = time
+      Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
+      (this.virtual?.up === true && !this._prevVirtualUp)
+    this._prevVirtualUp = this.virtual?.up ?? false
+    if (jumpJustPressed && !this.hasJumped) this.jumpPressedTime = time
 
-    const jumpHeld  = this.jumpKey.isDown   || this.cursors.up.isDown
-    const duckHeld  = this.cursors.down.isDown
-    const leftHeld  = this.cursors.left.isDown
-    const rightHeld = this.cursors.right.isDown
+    const jumpHeld  = this.jumpKey.isDown || this.cursors.up.isDown || (this.virtual?.up ?? false)
+    const duckHeld  = this.cursors.down.isDown || (this.virtual?.down ?? false)
+    const leftHeld  = this.cursors.left.isDown || (this.virtual?.left ?? false)
+    const rightHeld = this.cursors.right.isDown || (this.virtual?.right ?? false)
 
     // ── Duck ──────────────────────────────────────────────────────────────
     const wantDuck = duckHeld && onGround
@@ -183,15 +190,18 @@ export class Hero {
 
   get currentState(): HeroState { return this.state }
 
-  get isDead(): boolean { return this.hp <= 0 }
+  get isDead(): boolean { return this.hp < 0 }
 
   /**
    * Returns true if damage was taken (false if still invincible).
    * Triggers a white-flash + alpha-flicker on the sprite.
+   * In DEV mode: flicker still plays but HP is never reduced.
    */
   takeDamage(time: number): boolean {
     if (time < this.invincibleUntil) return false
-    this.hp = Math.max(0, this.hp - 1)
+    if (!import.meta.env.DEV) {
+      this.hp = Math.max(-1, this.hp - 1)
+    }
     this.invincibleUntil = time + this.INVINCIBILITY_MS
     // Flicker effect
     this.scene.tweens.add({
