@@ -109,8 +109,11 @@ export class Hero {
       body.setGravityY(HERO_PHYSICS.GRAVITY)
     }
 
-    // Reset jump flag on landing
-    if (onGround) this.hasJumped = false
+    // Reset jump flag on landing; re-buffer if jump is still held
+    if (onGround && this.hasJumped) {
+      this.hasJumped = false
+      if (jumpHeld) this.jumpPressedTime = time
+    }
 
     // ── Derive display state ──────────────────────────────────────────────
     this.updateState(body, onGround)
