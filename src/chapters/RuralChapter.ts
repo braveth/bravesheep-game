@@ -1,13 +1,14 @@
-import Phaser from 'phaser'
+import { RURAL } from '../config/chapters'
 import { TEX } from '../config/textures'
-import { BaseChapter, type ChapterParams, type IBg } from './BaseChapter'
+import { BossWolf }   from '../entities/enemies/BossWolf'
+import { Wolf }       from '../entities/enemies/Wolf'
+import { FatCat }     from '../entities/enemies/FatCat'
+import { Helicopter } from '../entities/enemies/Helicopter'
+import type { IChapter } from './IChapter'
 
-export class RuralChapter extends BaseChapter {
-  readonly bg: IBg = {
-    scrollMult: 0.3,
-    skyColor:   0x5c94fc,
-    apply(sprite: Phaser.GameObjects.TileSprite): void { sprite.setTexture(TEX.RURAL_BG) },
-  }
-
-  constructor(p: ChapterParams) { super(p) }
+export class RuralChapter implements IChapter {
+  readonly name    = RURAL.NAME
+  readonly boss    = BossWolf
+  readonly enemies = [Wolf, FatCat, Helicopter] as const
+  readonly bg      = { scrollMult: RURAL.SCROLL_MULT, skyColor: RURAL.SKY_COLOR, texture: TEX.RURAL_BG }
 }

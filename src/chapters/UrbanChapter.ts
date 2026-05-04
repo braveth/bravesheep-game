@@ -1,13 +1,14 @@
-import Phaser from 'phaser'
+import { URBAN } from '../config/chapters'
 import { TEX } from '../config/textures'
-import { BaseChapter, type ChapterParams, type IBg } from './BaseChapter'
+import { BossCat }    from '../entities/enemies/BossCat'
+import { Limo }       from '../entities/enemies/Limo'
+import { Bus }        from '../entities/enemies/Bus'
+import { Airplane }   from '../entities/enemies/Airplane'
+import type { IChapter } from './IChapter'
 
-export class UrbanChapter extends BaseChapter {
-  readonly bg: IBg = {
-    scrollMult: 0.15,
-    skyColor:   0x0d1020,
-    apply(sprite: Phaser.GameObjects.TileSprite): void { sprite.setTexture(TEX.URBAN_BG) },
-  }
-
-  constructor(p: ChapterParams) { super(p) }
+export class UrbanChapter implements IChapter {
+  readonly name    = URBAN.NAME
+  readonly boss    = BossCat
+  readonly enemies = [Limo, Bus, Airplane] as const
+  readonly bg      = { scrollMult: URBAN.SCROLL_MULT, skyColor: URBAN.SKY_COLOR, texture: TEX.URBAN_BG }
 }

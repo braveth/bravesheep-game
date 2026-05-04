@@ -8,7 +8,7 @@ import { Bomb }       from '../entities/enemies/Bomb'
 import { Limo }       from '../entities/enemies/Limo'
 import { Bus }        from '../entities/enemies/Bus'
 import { BaseBoss }   from '../entities/enemies/base/BaseBoss'
-import type { BaseChapter, EnemyClass } from '../chapters/BaseChapter'
+import type { IChapter, EnemyClass } from '../chapters/IChapter'
 import {
   WOLF, FAT_CAT, HELICOPTER, NINJA, AIRPLANE, BOMB, LIMO, BUS, BOSS,
 } from '../config/enemies'
@@ -128,7 +128,7 @@ export class EnemySpawner {
   }
 
   /** Spawn the boss for the current chapter. */
-  spawnBoss(chapter: BaseChapter, heroRef: { x: number }): void {
+  spawnBoss(chapter: IChapter, heroRef: { x: number }): void {
     if (this.boss) return  // already spawned
     this.boss = new chapter.boss(this.bossGroup, heroRef)
   }
