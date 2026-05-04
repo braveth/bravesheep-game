@@ -8,7 +8,7 @@ import { Win } from './scenes/Win'
 import { WORLD } from './config/physics'
 
 new Phaser.Game({
-  type: Phaser.AUTO,
+  type:   Phaser.AUTO,
   width:  WORLD.WIDTH,
   height: WORLD.HEIGHT,
   backgroundColor: '#5c94fc',   // sky blue — Rural biome
