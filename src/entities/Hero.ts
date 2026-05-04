@@ -2,18 +2,13 @@ import Phaser from 'phaser'
 import { HERO_PHYSICS, WORLD } from '../config/physics'
 import type { VirtualInput } from '../ui/MobileControls'
 
-type HeroState = 'idle' | 'run' | 'jump' | 'fall' | 'duck'
+type HeroState = 'idle' | 'run' | 'jump' | 'fall'
 
 // Hitbox dimensions (relative to 32×48 sprite with default center origin)
-const STAND_W = 18, STAND_H = 34   // height matches FatCat/turret enemy hitbox height
-const DUCK_W  = 22, DUCK_H  = 16
+const STAND_W = 18, STAND_H = 34
 
-// Offset helpers: align hitbox to the BOTTOM of the sprite so feet stay
-// planted on the ground when switching stand ↔ duck.
 const STAND_OX = (32 - STAND_W) / 2         // 7
 const STAND_OY = 48 - STAND_H               // 14
-const DUCK_OX  = (32 - DUCK_W)  / 2         // 5
-const DUCK_OY  = 48 - DUCK_H                // 32
 
 export class Hero {
   readonly sprite: Phaser.Physics.Arcade.Sprite
@@ -23,7 +18,6 @@ export class Hero {
   private jumpKey!: Phaser.Input.Keyboard.Key
 
   private state: HeroState = 'idle'
-  private isDucking = false
   private virtual: VirtualInput | null = null
   private _prevVirtualUp = false
 
@@ -70,41 +64,20 @@ export class Hero {
     // Consume jump input once per press and store timestamp
     const jumpJustPressed =
       Phaser.Input.Keyboard.JustDown(this.jumpKey) ||
-      Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
       (this.virtual?.up === true && !this._prevVirtualUp)
     this._prevVirtualUp = this.virtual?.up ?? false
     if (jumpJustPressed && !this.hasJumped) this.jumpPressedTime = time
 
-    const jumpHeld  = this.jumpKey.isDown || this.cursors.up.isDown || (this.virtual?.up ?? false)
-    const duckHeld  = !jumpHeld && (this.cursors.down.isDown || (this.virtual?.down ?? false))
+    const jumpHeld  = this.jumpKey.isDown || (this.virtual?.up ?? false)
     const leftHeld  = this.cursors.left.isDown || (this.virtual?.left ?? false)
     const rightHeld = this.cursors.right.isDown || (this.virtual?.right ?? false)
 
-    // ── Duck ──────────────────────────────────────────────────────────────
-    const wantDuck = duckHeld && onGround
-    if (wantDuck !== this.isDucking) {
-      this.isDucking = wantDuck
-      wantDuck ? this.applyDuckHitbox() : this.applyStandHitbox()
-    }
-
     // ── Horizontal movement ───────────────────────────────────────────────
-    if (this.isDucking) {
-      // Crouched run: keep duck hitbox but allow half-speed horizontal movement
-      const duckSpeed = HERO_PHYSICS.GROUND_SPEED * 0.55
-      if (leftHeld) {
-        body.setVelocityX(Math.max(body.velocity.x - HERO_PHYSICS.ACCELERATION * dt, -duckSpeed))
-        this.sprite.setFlipX(true)
-      } else if (rightHeld) {
-        body.setVelocityX(Math.min(body.velocity.x + HERO_PHYSICS.ACCELERATION * dt, duckSpeed))
-        this.sprite.setFlipX(false)
-      } else {
-        this.applyDecel(body, HERO_PHYSICS.DECELERATION, dt)
-      }
-    } else {
+    {
       const isAir    = !onGround
-      const maxSpeed = isAir ? HERO_PHYSICS.AIR_SPEED    : HERO_PHYSICS.GROUND_SPEED
-      const accel    = isAir ? HERO_PHYSICS.AIR_ACCELERATION : HERO_PHYSICS.ACCELERATION
-      const decel    = isAir ? HERO_PHYSICS.AIR_DECELERATION : HERO_PHYSICS.DECELERATION
+      const maxSpeed = isAir ? HERO_PHYSICS.AIR_SPEED         : HERO_PHYSICS.GROUND_SPEED
+      const accel    = isAir ? HERO_PHYSICS.AIR_ACCELERATION  : HERO_PHYSICS.ACCELERATION
+      const decel    = isAir ? HERO_PHYSICS.AIR_DECELERATION  : HERO_PHYSICS.DECELERATION
 
       if (leftHeld) {
         body.setVelocityX(Math.max(body.velocity.x - accel * dt, -maxSpeed))
@@ -118,14 +91,14 @@ export class Hero {
     }
 
     // ── Jump ──────────────────────────────────────────────────────────────
-    if (!this.isDucking) {
+    {
       const coyoteOk = (time - this.lastGroundTime) < HERO_PHYSICS.COYOTE_TIME
       const bufferOk = (time - this.jumpPressedTime) < HERO_PHYSICS.JUMP_BUFFER
 
       if (coyoteOk && bufferOk && !this.hasJumped) {
         body.setVelocityY(HERO_PHYSICS.JUMP_VELOCITY)
         this.hasJumped    = true
-        this.jumpPressedTime = -9999   // consume buffer
+        this.jumpPressedTime = -9999
       }
     }
 
@@ -153,10 +126,6 @@ export class Hero {
     this.body().setSize(STAND_W, STAND_H).setOffset(STAND_OX, STAND_OY)
   }
 
-  private applyDuckHitbox(): void {
-    this.body().setSize(DUCK_W, DUCK_H).setOffset(DUCK_OX, DUCK_OY)
-  }
-
   private applyDecel(
     body: Phaser.Physics.Arcade.Body,
     rate: number,
@@ -175,9 +144,7 @@ export class Hero {
     onGround: boolean
   ): void {
     let next: HeroState
-    if (this.isDucking) {
-      next = 'duck'
-    } else if (!onGround) {
+    if (!onGround) {
       next = body.velocity.y < 0 ? 'jump' : 'fall'
     } else {
       next = Math.abs(body.velocity.x) > 10 ? 'run' : 'idle'

@@ -4,8 +4,7 @@ import { WORLD } from '../config/physics'
 export interface VirtualInput {
   left:  boolean
   right: boolean
-  up:    boolean   // jump
-  down:  boolean   // duck
+  up:    boolean   // jump button only
 }
 
 // ─── Layout constants ────────────────────────────────────────────────────────
@@ -21,7 +20,7 @@ const JUMP_CX  = WORLD.WIDTH  - BTN_R - 24
 const JUMP_CY  = WORLD.HEIGHT - BTN_R - 24
 
 export class MobileControls {
-  readonly input: VirtualInput = { left: false, right: false, up: false, down: false }
+  readonly input: VirtualInput = { left: false, right: false, up: false }
 
   private knob!:     Phaser.GameObjects.Arc
   private jumpBtnBg!: Phaser.GameObjects.Arc
@@ -40,9 +39,9 @@ export class MobileControls {
       .setStrokeStyle(2, 0xffffff, ALPHA)
       .setInteractive()
 
-    // Direction wedge guides (just 4 lines from centre)
+    // Direction guides: left and right only
     const g = scene.add.graphics().setDepth(60).setAlpha(ALPHA * 0.6)
-    for (const angle of [0, 90, 180, 270]) {
+    for (const angle of [0, 180]) {
       const rad = Phaser.Math.DegToRad(angle)
       g.lineStyle(1, 0xffffff, 1)
       g.lineBetween(
@@ -99,35 +98,24 @@ export class MobileControls {
 
   private updateStick(px: number, py: number): void {
     const dx = px - STICK_CX
-    const dy = py - STICK_CY
-    const dist = Math.sqrt(dx * dx + dy * dy)
+    const dist = Math.abs(dx)
     const capped = Math.min(dist, STICK_R)
-    const angle  = Math.atan2(dy, dx)
 
-    const kx = STICK_CX + Math.cos(angle) * capped
-    const ky = STICK_CY + Math.sin(angle) * capped
-    this.knob.setPosition(kx, ky)
+    this.knob.setPosition(STICK_CX + Math.sign(dx) * capped, STICK_CY)
 
-    // 8-direction: use 30° dead zone on each axis
     const normX = dx / Math.max(dist, 1)
-    const normY = dy / Math.max(dist, 1)
-    const dead = 0.3
-
+    const dead  = 0.25
     this.input.left  = normX < -dead
     this.input.right = normX >  dead
-    this.input.up    = normY < -dead || (this.jumpPtrId !== null)   // stick up OR button held
-    this.input.down  = normY >  dead
   }
 
   private resetStick(): void {
     this.knob.setPosition(STICK_CX, STICK_CY)
     this.input.left  = false
     this.input.right = false
-    this.input.up    = (this.jumpPtrId !== null)   // preserve button hold state
-    this.input.down  = false
   }
 
   destroy(): void {
-    this.input.left = this.input.right = this.input.up = this.input.down = false
+    this.input.left = this.input.right = this.input.up = false
   }
 }
