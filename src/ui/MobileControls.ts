@@ -23,8 +23,8 @@ const JUMP_CY  = WORLD.HEIGHT - BTN_R - 24
 export class MobileControls {
   readonly input: VirtualInput = { left: false, right: false, up: false, down: false }
 
-  private knob:     Phaser.GameObjects.Arc
-  private jumpBtnBg: Phaser.GameObjects.Arc
+  private knob!:     Phaser.GameObjects.Arc
+  private jumpBtnBg!: Phaser.GameObjects.Arc
 
   // Pointer ID tracking so stick and button don't steal each other
   private stickPtrId: number | null = null
