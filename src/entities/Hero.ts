@@ -30,8 +30,8 @@ export class Hero {
 
   // Coyote time: timestamp of the last frame the hero was on the ground
   private lastGroundTime = 0
-  // Jump buffer: timestamp of the last jump key press
-  private jumpPressedTime = -9999
+  // Jump buffer: timestamp of the last jump key press (null = no pending jump)
+  private jumpPressedTime: number | null = null
   // True from the moment of a jump until the hero lands again
   private hasJumped = false
 
@@ -93,20 +93,13 @@ export class Hero {
     // ── Jump ──────────────────────────────────────────────────────────────
     {
       const coyoteOk = (time - this.lastGroundTime) < HERO_PHYSICS.COYOTE_TIME
-      const bufferOk = (time - this.jumpPressedTime) < HERO_PHYSICS.JUMP_BUFFER
+      const bufferOk = this.jumpPressedTime !== null && (time - this.jumpPressedTime) < HERO_PHYSICS.JUMP_BUFFER
 
       if (coyoteOk && bufferOk && !this.hasJumped) {
         body.setVelocityY(HERO_PHYSICS.JUMP_VELOCITY)
-        this.hasJumped    = true
-        this.jumpPressedTime = -9999
+        this.hasJumped       = true
+        this.jumpPressedTime  = null   // consume buffer
       }
-    }
-
-    // Variable jump height: lower gravity while ascending + holding jump
-    if (this.hasJumped && jumpHeld && body.velocity.y < 0) {
-      body.setGravityY(HERO_PHYSICS.JUMP_HOLD_GRAVITY)
-    } else {
-      body.setGravityY(HERO_PHYSICS.GRAVITY)
     }
 
     // Reset jump flag on landing; re-buffer if jump is still held
