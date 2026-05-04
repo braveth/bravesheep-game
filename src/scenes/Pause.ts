@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { WORLD } from '../config/physics'
+import { WORLD } from '../config/world'
 
 export class Pause extends Phaser.Scene {
   constructor() {

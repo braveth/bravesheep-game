@@ -5,7 +5,7 @@ import { Game } from './scenes/Game'
 import { Pause } from './scenes/Pause'
 import { GameOver } from './scenes/GameOver'
 import { Win } from './scenes/Win'
-import { WORLD } from './config/physics'
+import { WORLD } from './config/world'
 
 new Phaser.Game({
   type:   Phaser.AUTO,

@@ -12,7 +12,7 @@ import type { BaseChapter, EnemyClass } from '../chapters/BaseChapter'
 import {
   WOLF, FAT_CAT, HELICOPTER, NINJA, AIRPLANE, BOMB, LIMO, BUS, BOSS,
 } from '../config/enemies'
-import { WORLD } from '../config/physics'
+import { WORLD } from '../config/world'
 
 type LevelConfig = {
   waveInterval:  number

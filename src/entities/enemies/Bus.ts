@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { BUS } from '../../config/enemies'
-import { WORLD } from '../../config/physics'
+import { WORLD } from '../../config/world'
 import { LaserTurret } from './base/LaserTurret'
 
 /**

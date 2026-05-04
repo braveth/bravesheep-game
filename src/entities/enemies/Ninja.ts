@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { NINJA } from '../../config/enemies'
-import { WORLD } from '../../config/physics'
+import { WORLD } from '../../config/world'
 
 /**
  * Ninja — drops from Helicopter, then BOUNCES toward the hero.

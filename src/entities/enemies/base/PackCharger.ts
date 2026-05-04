@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { BaseEnemy } from './BaseEnemy'
-import { WORLD } from '../../../config/physics'
+import { WORLD } from '../../../config/world'
 
 /**
  * Base class for ground pack-chargers (Wolf, Limo).

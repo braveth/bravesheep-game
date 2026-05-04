@@ -1,7 +1,7 @@
 import Phaser from 'phaser'
 import { BaseEnemy } from './BaseEnemy'
 import { FAT_CAT } from '../../../config/enemies'
-import { WORLD } from '../../../config/physics'
+import { WORLD } from '../../../config/world'
 
 export abstract class LaserTurret extends BaseEnemy {
   private fireSchedule: Array<{ at: number; shot: 0 | 1 }> = []

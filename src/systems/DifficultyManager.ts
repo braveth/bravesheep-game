@@ -1,5 +1,5 @@
 import { DIFFICULTY } from '../config/enemies'
-import { WORLD } from '../config/physics'
+import { WORLD } from '../config/world'
 
 export class DifficultyManager {
   private elapsed = 0   // seconds since last reset

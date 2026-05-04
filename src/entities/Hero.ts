@@ -1,15 +1,11 @@
 import Phaser from 'phaser'
-import { HERO_PHYSICS, WORLD } from '../config/physics'
+import { WORLD } from '../config/world'
+import { HERO } from '../config/hero'
 import type { VirtualInput } from '../ui/MobileControls'
 
 type HeroState = 'idle' | 'run' | 'jump' | 'fall'
 
 // Hitbox dimensions (relative to 32×48 sprite with default center origin)
-const STAND_W = 18, STAND_H = 34
-
-const STAND_OX = (32 - STAND_W) / 2         // 7
-const STAND_OY = 48 - STAND_H               // 14
-
 export class Hero {
   readonly sprite: Phaser.Physics.Arcade.Sprite
 
@@ -25,8 +21,8 @@ export class Hero {
   hp    = 3
   maxHp = 3
   private invincibleUntil = 0
-  private readonly INVINCIBILITY_MS = 1200
-  private readonly STOMP_BOUNCE_VY  = -320
+  private readonly INVINCIBILITY_MS = HERO.INVINCIBILITY_MS
+  private readonly STOMP_BOUNCE_VY  = HERO.STOMP_BOUNCE_VY
 
   // Coyote time: timestamp of the last frame the hero was on the ground
   private lastGroundTime = 0
@@ -40,8 +36,8 @@ export class Hero {
     this.sprite = scene.physics.add.sprite(x, y, 'hero')
 
     const body = this.body()
-    body.setGravityY(HERO_PHYSICS.GRAVITY)
-    body.setMaxVelocityY(HERO_PHYSICS.MAX_FALL_SPEED)
+    body.setGravityY(HERO.GRAVITY)
+    body.setMaxVelocityY(HERO.MAX_FALL_SPEED)
     body.setCollideWorldBounds(true)
     this.applyStandHitbox()
 
@@ -75,9 +71,9 @@ export class Hero {
     // ── Horizontal movement ───────────────────────────────────────────────
     {
       const isAir    = !onGround
-      const maxSpeed = isAir ? HERO_PHYSICS.AIR_SPEED         : HERO_PHYSICS.GROUND_SPEED
-      const accel    = isAir ? HERO_PHYSICS.AIR_ACCELERATION  : HERO_PHYSICS.ACCELERATION
-      const decel    = isAir ? HERO_PHYSICS.AIR_DECELERATION  : HERO_PHYSICS.DECELERATION
+      const maxSpeed = isAir ? HERO.AIR_SPEED         : HERO.GROUND_SPEED
+      const accel    = isAir ? HERO.AIR_ACCELERATION  : HERO.ACCELERATION
+      const decel    = isAir ? HERO.AIR_DECELERATION  : HERO.DECELERATION
 
       if (leftHeld) {
         body.setVelocityX(Math.max(body.velocity.x - accel * dt, -maxSpeed))
@@ -92,11 +88,11 @@ export class Hero {
 
     // ── Jump ──────────────────────────────────────────────────────────────
     {
-      const coyoteOk = (time - this.lastGroundTime) < HERO_PHYSICS.COYOTE_TIME
-      const bufferOk = this.jumpPressedTime !== null && (time - this.jumpPressedTime) < HERO_PHYSICS.JUMP_BUFFER
+      const coyoteOk = (time - this.lastGroundTime) < HERO.COYOTE_TIME
+      const bufferOk = this.jumpPressedTime !== null && (time - this.jumpPressedTime) < HERO.JUMP_BUFFER
 
       if (coyoteOk && bufferOk && !this.hasJumped) {
-        body.setVelocityY(HERO_PHYSICS.JUMP_VELOCITY)
+        body.setVelocityY(HERO.JUMP_VELOCITY)
         this.hasJumped       = true
         this.jumpPressedTime  = null   // consume buffer
       }
@@ -119,7 +115,7 @@ export class Hero {
   }
 
   private applyStandHitbox(): void {
-    this.body().setSize(STAND_W, STAND_H).setOffset(STAND_OX, STAND_OY)
+    this.body().setSize(HERO.HIT_W, HERO.HIT_H).setOffset(HERO.HIT_OX, HERO.HIT_OY)
   }
 
   private applyDecel(

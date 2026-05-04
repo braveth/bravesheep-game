@@ -140,7 +140,7 @@ Boot → MainMenu (wallet connect / NFT equip optional) → Game Scene
 
 Hitbox is centered on sprite; updated on state change via `setSize()` + `setOffset()`.
 
-### 5.3 Physics Constants (`/src/config/physics.ts`)
+### 5.3 Physics Constants (`/src/config/world.ts`)
 
 ```typescript
 export const HERO_PHYSICS = {

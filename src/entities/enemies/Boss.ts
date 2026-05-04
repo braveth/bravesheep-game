@@ -1,6 +1,6 @@
 import Phaser from 'phaser'
 import { BOSS } from '../../config/enemies'
-import { WORLD } from '../../config/physics'
+import { WORLD } from '../../config/world'
 
 type BossPhase = 'enter' | 'idle' | 'charge' | 'return' | 'dead'
 

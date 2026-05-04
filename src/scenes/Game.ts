@@ -6,7 +6,7 @@ import { ProgressionManager } from '../systems/ProgressionManager'
 import { HUD } from '../ui/HUD'
 import { DevPanel } from '../ui/DevPanel'
 import { MobileControls } from '../ui/MobileControls'
-import { WORLD } from '../config/physics'
+import { WORLD } from '../config/world'
 import { BOSS, DIFFICULTY } from '../config/enemies'
 
 export class Game extends Phaser.Scene {
