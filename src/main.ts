@@ -26,5 +26,9 @@ new Phaser.Game({
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
 
+  input: {
+    activePointers: 4,   // support joystick + jump simultaneously
+  },
+
   scene: [Boot, Home, Game, Pause, GameOver, Win],
 })
