@@ -76,7 +76,7 @@ export class Hero {
     if (jumpJustPressed && !this.hasJumped) this.jumpPressedTime = time
 
     const jumpHeld  = this.jumpKey.isDown || this.cursors.up.isDown || (this.virtual?.up ?? false)
-    const duckHeld  = this.cursors.down.isDown || (this.virtual?.down ?? false)
+    const duckHeld  = !jumpHeld && (this.cursors.down.isDown || (this.virtual?.down ?? false))
     const leftHeld  = this.cursors.left.isDown || (this.virtual?.left ?? false)
     const rightHeld = this.cursors.right.isDown || (this.virtual?.right ?? false)
 
