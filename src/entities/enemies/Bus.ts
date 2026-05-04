@@ -3,6 +3,7 @@ import { BUS } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { LaserTurret } from './base/LaserTurret'
+import type { ITurretSpawnConfig } from './base/LaserTurret'
 
 /**
  * Bus — stationary laser turret (urban), mirrors FatCat behaviour.
@@ -10,6 +11,7 @@ import { LaserTurret } from './base/LaserTurret'
  * Hero must jump over or duck under.
  */
 export class Bus extends LaserTurret {
+  static readonly spawnConfig: ITurretSpawnConfig = { spawnOffsetX: BUS.SPAWN_OFFSET_X }
   constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - BUS.SPRITE_H / 2
     super(scene, group, x, y, TEX.BUS, BUS.HP)

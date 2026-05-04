@@ -1,51 +1,44 @@
 import Phaser from 'phaser'
+import { BaseBoss } from '../entities/enemies/base/BaseBoss'
+import type { ICollisionRegistrar } from '../entities/interfaces/ICollisionRegistrar'
+import type { IStompHandler } from '../entities/interfaces/IStompHandler'
 import type { Hero } from '../entities/Hero'
-import type { EnemySpawner } from './EnemySpawner'
-import type { HUD } from '../ui/HUD'
 
-export class CollisionManager {
+export class CollisionManager implements ICollisionRegistrar {
   constructor(
-    scene:   Phaser.Scene,
-    hero:    Hero,
-    spawner: EnemySpawner,
-    hud:     HUD,
-    groundBody: Phaser.GameObjects.Rectangle,
-  ) {
-    scene.physics.add.collider(hero.sprite, groundBody)
+    private readonly scene:      Phaser.Scene,
+    private readonly groundBody: Phaser.GameObjects.Rectangle,
+    private readonly hero:       Hero,
+  ) {}
 
-    const damage = () => {
-      if (hero.takeDamage(scene.time.now)) hud.setHP(hero.hp)
-    }
+  addGroundCollider(group: Phaser.Physics.Arcade.Group): void {
+    this.scene.physics.add.collider(group, this.groundBody)
+  }
 
-    const damageAndDestroy = (_: unknown, go: unknown) => {
-      (go as Phaser.Physics.Arcade.Sprite).destroy()
-      damage()
-    }
-
-    scene.physics.add.overlap(hero.sprite, spawner.wolfGroup,      damage)
-    scene.physics.add.overlap(hero.sprite, spawner.fatCatGroup,    damage)
-    scene.physics.add.overlap(hero.sprite, spawner.ninjaGroup,     damage)
-    scene.physics.add.overlap(hero.sprite, spawner.limoGroup,      damage)
-    scene.physics.add.overlap(hero.sprite, spawner.busGroup,       damage)
-    scene.physics.add.overlap(hero.sprite, spawner.laserGroup,     damageAndDestroy)
-    scene.physics.add.overlap(hero.sprite, spawner.shurikenGroup,  damageAndDestroy)
-    scene.physics.add.overlap(hero.sprite, spawner.bombGroup,      damageAndDestroy)
-    scene.physics.add.overlap(hero.sprite, spawner.bossLaserGroup, damageAndDestroy)
-
-    scene.physics.add.overlap(
-      hero.sprite,
-      spawner.bossGroup,
-      (heroGO, bossGO) => {
-        const heroBody = (heroGO as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body
-        const bossBody = (bossGO as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body
-        if (heroBody.velocity.y > 60 && heroBody.bottom <= bossBody.top + 12) {
-          spawner.damageEnemy(bossGO as Phaser.Physics.Arcade.Sprite)
-          hero.stomp()
-          hud.updateBossBar(spawner.bossHP)
-        } else {
-          damage()
-        }
-      },
+  addBodyOverlap(group: Phaser.Physics.Arcade.Group): void {
+    this.scene.physics.add.overlap(this.hero.sprite, group, () =>
+      this.hero.takeDamage(this.scene.time.now)
     )
   }
+
+  addProjectileOverlap(group: Phaser.Physics.Arcade.Group): void {
+    this.scene.physics.add.overlap(this.hero.sprite, group, (_hero, projectile) => {
+      ;(projectile as Phaser.Physics.Arcade.Sprite).destroy()
+      this.hero.takeDamage(this.scene.time.now)
+    })
+  }
+
+  addStompOverlap(group: Phaser.Physics.Arcade.Group, handler: IStompHandler): void {
+    this.scene.physics.add.overlap(this.hero.sprite, group, (h, e) => {
+      const heroBody = (h as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body
+      const bossBody = (e as Phaser.Physics.Arcade.Sprite).body as Phaser.Physics.Arcade.Body
+      if (BaseBoss.isStomped(heroBody, bossBody)) {
+        this.hero.stomp()
+        handler.onStomp()
+      } else {
+        this.hero.takeDamage(this.scene.time.now)
+      }
+    })
+  }
 }
+

@@ -1,55 +1,51 @@
 import Phaser from 'phaser'
 import { Hero } from '../entities/Hero'
-import { EnemySpawner } from '../systems/EnemySpawner'
+import { SpawnerManager } from '../systems/SpawnerManager'
+import { CollisionManager } from '../systems/CollisionManager'
+import { BossSpawner } from '../entities/spawners/BossSpawner'
 import { DifficultyManager } from '../systems/DifficultyManager'
 import { ChapterState, PHASE } from '../systems/ChapterState'
 import { WorldRenderer } from '../systems/WorldRenderer'
-import { CollisionManager } from '../systems/CollisionManager'
 import { HUD } from '../ui/HUD'
 import { DevPanel } from '../ui/DevPanel'
 import { MobileControls } from '../ui/MobileControls'
 import { WORLD } from '../config/world'
-import { BOSS, DIFFICULTY } from '../config/enemies'
+import { DIFFICULTY } from '../config/enemies'
+import type { LevelConfig } from '../config/LevelConfig'
 
 export class Game extends Phaser.Scene {
-  private hero!:        Hero
-  private spawner!:     EnemySpawner
-  private difficulty!:  DifficultyManager
-  private progression!: ChapterState
-  private world!:       WorldRenderer
-  private hud!:         HUD
+  private hero!:           Hero
+  private spawnerManager!: SpawnerManager
+  private collisions!:     CollisionManager
+  private bossSpawner:     BossSpawner | null = null
+  private _bossDeadScheduled = false
+  private difficulty!:     DifficultyManager
+  private progression!:    ChapterState
+  private world!:          WorldRenderer
+  private hud!:            HUD
 
   private mobileControls?: MobileControls
   private devPanel?: DevPanel
+  private _ending = false
 
   constructor() {
     super({ key: 'Game' })
   }
 
-  create(): void {
+  create(data?: { startChapter?: number }): void {
+    this._ending = false
     this.physics.world.setBounds(0, 0, WORLD.WIDTH, WORLD.HEIGHT)
 
     this.world       = new WorldRenderer(this)
     this.difficulty  = new DifficultyManager()
-    this.progression = new ChapterState()
-    this.spawner     = new EnemySpawner(this, this.world.groundBody)
+    this.progression = new ChapterState(data?.startChapter ?? 0)
     this.hero        = new Hero(this, 200, Hero.spawnY())
     this.hud         = new HUD(this, this.hero.maxHp)
+    this.collisions  = new CollisionManager(this, this.world.groundBody, this.hero)
+    this.spawnerManager = new SpawnerManager(this, this.progression.runnerConfig, this.collisions)
 
-    new CollisionManager(this, this.hero, this.spawner, this.hud, this.world.groundBody)
-
-    this.hud.setHP(this.hero.hp)
+    this.physics.add.collider(this.hero.sprite, this.world.groundBody)
     this.applyChapter()
-
-    this.add.text(10, WORLD.HEIGHT - 26, '← → move   Space/↑ jump   ↓ duck', {
-      fontSize: '12px',
-      color: '#ffffff88',
-    }).setDepth(10)
-
-    this.input.keyboard!.on('keydown-ESC', () => {
-      this.scene.pause()
-      this.scene.launch('Pause')
-    })
 
     this.mobileControls = new MobileControls(this)
     this.hero.setVirtualInput(this.mobileControls.input)
@@ -57,10 +53,13 @@ export class Game extends Phaser.Scene {
     if (import.meta.env.DEV) {
       this.devPanel = new DevPanel(
         this,
-        () => this.resetGame(),
+        () => this.cycleChapter(),
         () => {
-          if (this.progression.phase === PHASE.BOSS) this.enterRunnerPhase()
-          else                                   this.enterBossPhase()
+          if (this.progression.phase === PHASE.BOSS) {
+            this.enterRunnerPhase()
+          } else {
+            this.enterBossPhase()
+          }
         },
       )
     }
@@ -73,39 +72,46 @@ export class Game extends Phaser.Scene {
     const scrollSpeed     = this.difficulty.scrollSpeed
     const effectiveScroll = this.progression.phase === PHASE.BOSS ? 0 : scrollSpeed
 
-    this.world.scroll(effectiveScroll, dt, this.progression.chapter.bg.scrollMult)
+    this.world.scroll(effectiveScroll, dt, this.progression.runnerConfig.bg.scrollMult)
     this.hero.update(time, delta)
 
-    this.spawner.update(
-      time, delta,
-      this.hero.sprite.x,
-      effectiveScroll,
-      {
-        waveInterval:  this.difficulty.waveInterval,
-        turretShots:   this.difficulty.turretShots,
-        airDropCount:  this.difficulty.airDropCount,
-        packCount:     this.difficulty.packCount,
-        packSpeedMult: this.difficulty.packSpeedMult,
-        speedFactor:   this.difficulty.speedFactor,
-        enemies:       this.progression.chapter.enemies,
-      },
-    )
+    if (this.progression.phase === PHASE.RUNNER) {
+      this.spawnerManager.update(
+        time,
+        this.hero.sprite.x,
+        effectiveScroll,
+        {
+          waveInterval:  this.difficulty.waveInterval,
+          turretShots:   this.difficulty.turretShots,
+          airDropCount:  this.difficulty.airDropCount,
+          packCount:     this.difficulty.packCount,
+          packSpeedMult: this.difficulty.packSpeedMult,
+          speedFactor:   this.difficulty.speedFactor,
+        } satisfies LevelConfig,
+      )
+    } else if (this.bossSpawner) {
+      this.bossSpawner.update(time)
+      if (!this.bossSpawner.alive && !this._bossDeadScheduled) {
+        this._bossDeadScheduled = true
+        this.time.delayedCall(1200, () => this.showChapterComplete())
+      }
+    }
 
     this.hud.setDistance(this.difficulty.metres)
     this.hud.setLevel(this.difficulty.level)
-    if (this.progression.phase === PHASE.BOSS) this.hud.updateBossBar(this.spawner.bossHP)
 
     if (this.progression.phase === PHASE.RUNNER && this.difficulty.level >= DIFFICULTY.levelMax) {
       this.enterBossPhase()
     }
 
-    if (this.progression.phase === PHASE.BOSS && !this.spawner.bossAlive && this.spawner.bossHP <= 0) {
-      this.enterRunnerPhase()
-    }
-
-    if (this.hero.isDead) {
+    if (this.hero.isDead && !this._ending) {
+      this._ending = true
       this.time.delayedCall(1200, () => {
-        this.scene.start('GameOver', { metres: this.difficulty.metres, level: this.difficulty.level })
+        this.scene.start('GameOver', {
+          chapterIndex: this.progression.index,
+          metres:       this.difficulty.metres,
+          level:        this.difficulty.level,
+        })
       })
     }
 
@@ -123,7 +129,7 @@ export class Game extends Phaser.Scene {
         nextLevelIn:   this.difficulty.nextLevelIn,
         metres:        this.difficulty.metres,
         bossMode:      this.progression.phase === PHASE.BOSS,
-        biome:         this.progression.chapter.name,
+        biome:         this.progression.runnerConfig.name,
         heroState:     this.hero.currentState,
         heroVx:        b.velocity.x,
         heroVy:        b.velocity.y,
@@ -132,37 +138,54 @@ export class Game extends Phaser.Scene {
     }
   }
 
+  private showChapterComplete(): void {
+    if (this._ending) return
+    this._ending = true
+    this.scene.pause()
+    this.scene.launch('Win', {
+      nextChapterIndex: this.progression.index + 1,
+      chapterName:      this.progression.runnerConfig.name,
+      metres:           this.difficulty.metres,
+    })
+  }
+
   private applyChapter(): void {
-    const chapter = this.progression.chapter
-    this.world.applyBg(chapter.bg)
-    this.devPanel?.setBiomeLabel(`[${chapter.name}]`)
+    const runner = this.progression.runnerConfig
+    this.world.applyBg(runner.bg)
+    this.devPanel?.setChapterLabel(`[${runner.name}]`)
+  }
+
+  private enterRunnerPhase(): void {
+    this.bossSpawner?.clear()
+    this.bossSpawner = null
+    this._bossDeadScheduled = false
+    this.progression.cancelBoss()
+    this.spawnerManager.clear()
+    this.hud.hideBossBar()
+    this.devPanel?.setBossLabel('[Runner]')
   }
 
   private enterBossPhase(): void {
     this.progression.startBoss()
-    this.spawner.clearAll()
-    this.spawner.spawnBoss(this.progression.chapter, this.hero.sprite)
-    this.hud.showBossBar(this, BOSS.HP)
+    this.spawnerManager.clear()
+    this._bossDeadScheduled = false
+    this.bossSpawner = new BossSpawner(this, this.progression.bossConfig, this.hero.sprite, this.collisions)
+    this.hud.showBossBar(this.bossSpawner.maxHp)
     this.devPanel?.setBossLabel('[Boss]')
   }
 
-  private enterRunnerPhase(): void {
-    if (!this.progression.startRunner()) return
-    this.spawner.clearBoss()
-    this.spawner.clearAll()
-    this.hud.hideBossBar()
+  private cycleChapter(): void {
+    this.spawnerManager.clear()
+    this.bossSpawner?.clear()
+    this.bossSpawner    = null
+    this._bossDeadScheduled = false
+    this._ending        = false
+    this.progression    = new ChapterState(this.progression.index + 1)
+    this.spawnerManager = new SpawnerManager(this, this.progression.runnerConfig, this.collisions)
     this.difficulty.reset()
+    this.hud.hideBossBar()
     this.applyChapter()
-    this.devPanel?.setBossLabel('')
+    this.devPanel?.setBossLabel('[Runner]')
   }
 
-  private resetGame(): void {
-    this.progression.reset()
-    this.spawner.clearBoss()
-    this.spawner.clearAll()
-    this.difficulty.reset()
-    this.applyChapter()
-    this.hud.hideBossBar()
-    this.devPanel?.setBossLabel('')
-  }
 }

@@ -1,7 +1,9 @@
 import Phaser from 'phaser'
 import { WORLD } from '../config/world'
+import { EVENTS } from '../config/events'
 
 export class HUD {
+  private readonly scene:   Phaser.Scene
   private hpIcons:    Phaser.GameObjects.Image[]
   private distText:   Phaser.GameObjects.Text
   private levelBadge: Phaser.GameObjects.Text
@@ -11,6 +13,7 @@ export class HUD {
   private bossMaxHp   = 1
 
   constructor(scene: Phaser.Scene, maxHp: number) {
+    this.scene   = scene
     this.hpIcons = []
     for (let i = 0; i < maxHp; i++) {
       const icon = scene.add.image(16 + i * 26, 16, 'hp-icon')
@@ -37,9 +40,22 @@ export class HUD {
       })
       .setOrigin(0.5, 0)
       .setDepth(10)
+
+    scene.add.text(10, WORLD.HEIGHT - 26, '← → move   Space/↑ jump   ↓ duck', {
+      fontSize: '12px',
+      color: '#ffffff88',
+    }).setDepth(10)
+
+    scene.input.keyboard!.on('keydown-ESC', () => {
+      scene.scene.pause()
+      scene.scene.launch('Pause')
+    })
+
+    scene.events.on(EVENTS.HERO_HP, (hp: number) => this.setHP(hp))
+    scene.events.on(EVENTS.BOSS_HP, (hp: number) => this.updateBossBar(hp))
   }
 
-  setHP(hp: number): void {
+  private setHP(hp: number): void {
     this.hpIcons.forEach((icon, i) => {
       icon.setVisible(i < hp)
     })
@@ -53,21 +69,21 @@ export class HUD {
     this.levelBadge.setText(`LV ${level + 1}`)
   }
 
-  showBossBar(scene: Phaser.Scene, maxHp: number): void {
+  showBossBar(maxHp: number): void {
     this.bossMaxHp = maxHp
     const barW = WORLD.WIDTH - 40
     const barX = WORLD.WIDTH / 2
     const barY = 12
-    this.bossBarBg = scene.add.rectangle(barX, barY, barW, 14, 0x440000).setDepth(12).setOrigin(0.5, 0)
-    this.bossBarFg = scene.add.rectangle(barX - barW / 2, barY, barW, 14, 0xff2200).setDepth(13).setOrigin(0, 0)
-    this.bossLabel = scene.add.text(barX, barY + 7, 'BOSS', {
+    this.bossBarBg = this.scene.add.rectangle(barX, barY, barW, 14, 0x440000).setDepth(12).setOrigin(0.5, 0)
+    this.bossBarFg = this.scene.add.rectangle(barX - barW / 2, barY, barW, 14, 0xff2200).setDepth(13).setOrigin(0, 0)
+    this.bossLabel = this.scene.add.text(barX, barY + 7, 'BOSS', {
       fontSize: '10px', color: '#ffffff',
     }).setOrigin(0.5, 0.5).setDepth(14)
     this.levelBadge.setVisible(false)
     this.distText.setVisible(false)
   }
 
-  updateBossBar(hp: number): void {
+  private updateBossBar(hp: number): void {
     if (!this.bossBarFg || !this.bossBarBg) return
     const frac = Math.max(0, hp / this.bossMaxHp)
     const barW = WORLD.WIDTH - 40

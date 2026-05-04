@@ -2,8 +2,9 @@ import Phaser from 'phaser'
 import { WORLD } from '../config/world'
 
 export interface WinData {
-  metres: number
-  level:  number
+  nextChapterIndex: number
+  chapterName:      string
+  metres:           number
 }
 
 export class Win extends Phaser.Scene {
@@ -12,41 +13,37 @@ export class Win extends Phaser.Scene {
   }
 
   create(data: WinData): void {
-    const { metres = 0, level = 0 } = data ?? {}
+    const { nextChapterIndex = 1, chapterName = '', metres = 0 } = data ?? {}
 
     this.add.rectangle(
       WORLD.WIDTH / 2, WORLD.HEIGHT / 2,
       WORLD.WIDTH, WORLD.HEIGHT,
-      0x000022, 0.80,
+      0x000022, 0.82,
     )
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 110, 'YOU WIN!', {
-      fontSize: '60px',
+    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 100, 'CHAPTER COMPLETE', {
+      fontSize: '48px',
       color: '#ffdd44',
       fontStyle: 'bold',
     }).setOrigin(0.5)
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 30, `Boss defeated at ${metres} m`, {
-      fontSize: '22px',
+    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 30, `${chapterName} cleared at ${metres} m`, {
+      fontSize: '20px',
       color: '#ffffff',
     }).setOrigin(0.5)
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 12, `Level ${level + 1}`, {
-      fontSize: '18px',
-      color: '#aaaaaa',
-    }).setOrigin(0.5)
-
-    this.makeBtn(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 72, 'PLAY AGAIN', () => {
-      this.scene.start('Game')
+    this.makeBtn(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 60, 'CONTINUE', () => {
+      this.scene.stop()
+      this.scene.start('Game', { startChapter: nextChapterIndex })
     })
   }
 
   private makeBtn(x: number, y: number, label: string, cb: () => void): void {
     this.add.text(x, y, label, {
-      fontSize: '22px',
+      fontSize: '24px',
       color: '#ffffff',
       backgroundColor: '#225500dd',
-      padding: { x: 28, y: 12 },
+      padding: { x: 32, y: 14 },
     })
       .setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
@@ -55,3 +52,4 @@ export class Win extends Phaser.Scene {
       .on('pointerdown', cb)
   }
 }
+

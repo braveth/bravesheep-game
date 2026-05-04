@@ -1,6 +1,19 @@
 import Phaser from 'phaser'
 import { BaseEnemy } from './BaseEnemy'
 import { WORLD } from '../../../config/world'
+import { PackChargerSpawner } from '../../spawners/PackChargerSpawner'
+
+export interface IPackSpawnConfig {
+  spawnOffsetX: number
+  speed:        number
+  stagger:      number
+}
+
+/** Constructor type that enforces a static spawnConfig is present. */
+export type PackChargerClass<T extends PackCharger = PackCharger> = {
+  new(group: Phaser.Physics.Arcade.Group, x: number): T
+  readonly spawnConfig: IPackSpawnConfig
+}
 
 /**
  * Base class for ground pack-chargers (Wolf, Limo).
@@ -15,6 +28,7 @@ import { WORLD } from '../../../config/world'
  *    PACK_STAGGER ms, then the next, etc. — giving a rapid sequential charge.
  */
 export abstract class PackCharger extends BaseEnemy {
+  static readonly spawner = PackChargerSpawner
   /**
    * Shared object whose `armedAt` is set to the current game-time the moment
    * the pack leader enters the viewport.  0 = not yet armed.
@@ -56,6 +70,8 @@ export abstract class PackCharger extends BaseEnemy {
     ;(this.sprite.body as Phaser.Physics.Arcade.Body)
       .setVelocityX(-(scrollSpeed + (this.charging ? speed : 0)))
   }
+
+  abstract update(time: number, heroX: number, scrollSpeed: number): void
 
   get isOffScreen(): boolean { return this.sprite.x < -120 }
 }

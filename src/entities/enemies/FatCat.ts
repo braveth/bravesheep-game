@@ -3,6 +3,7 @@ import { FAT_CAT } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
 import { LaserTurret } from './base/LaserTurret'
+import type { ITurretSpawnConfig } from './base/LaserTurret'
 
 /**
  * FatCat — stationary laser turret (rural).
@@ -10,6 +11,7 @@ import { LaserTurret } from './base/LaserTurret'
  * Hero must jump over or duck under.
  */
 export class FatCat extends LaserTurret {
+  static readonly spawnConfig: ITurretSpawnConfig = { spawnOffsetX: FAT_CAT.SPAWN_OFFSET_X }
   constructor(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, x: number) {
     const y = WORLD.GROUND_Y - FAT_CAT.SPRITE_H / 2
     super(scene, group, x, y, TEX.FAT_CAT, FAT_CAT.HP)

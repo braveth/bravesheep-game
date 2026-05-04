@@ -9,7 +9,6 @@ export const TEX = {
   HP_ICON:    'hp-icon',
   HELICOPTER: 'helicopter',
   NINJA:      'ninja',
-  SHURIKEN:   'shuriken',
   AIRPLANE:   'airplane',
   BOMB:       'bomb',
   LIMO:       'limo',

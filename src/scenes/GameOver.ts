@@ -2,8 +2,9 @@ import Phaser from 'phaser'
 import { WORLD } from '../config/world'
 
 export interface GameOverData {
-  metres: number
-  level:  number
+  chapterIndex: number
+  metres:       number
+  level:        number
 }
 
 export class GameOver extends Phaser.Scene {
@@ -12,7 +13,7 @@ export class GameOver extends Phaser.Scene {
   }
 
   create(data: GameOverData): void {
-    const { metres = 0, level = 0 } = data ?? {}
+    const { chapterIndex = 0, metres = 0, level = 0 } = data ?? {}
 
     this.add.rectangle(
       WORLD.WIDTH / 2, WORLD.HEIGHT / 2,
@@ -20,24 +21,28 @@ export class GameOver extends Phaser.Scene {
       0x000000, 0.78,
     )
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 110, 'GAME OVER', {
+    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 100, 'YOU DIED', {
       fontSize: '56px',
       color: '#ff4444',
       fontStyle: 'bold',
     }).setOrigin(0.5)
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 36, `${metres} m`, {
-      fontSize: '32px',
+    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 - 28, `${metres} m`, {
+      fontSize: '28px',
       color: '#ffffff',
     }).setOrigin(0.5)
 
-    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 8, `Level ${level + 1}`, {
+    this.add.text(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 10, `Level ${level + 1}`, {
       fontSize: '18px',
       color: '#aaaaaa',
     }).setOrigin(0.5)
 
-    this.makeBtn(WORLD.WIDTH / 2, WORLD.HEIGHT / 2 + 72, 'PLAY AGAIN', () => {
-      this.scene.start('Game')
+    this.makeBtn(WORLD.WIDTH / 2 - 90, WORLD.HEIGHT / 2 + 72, 'RESTART', () => {
+      this.scene.start('Game', { startChapter: chapterIndex })
+    })
+
+    this.makeBtn(WORLD.WIDTH / 2 + 90, WORLD.HEIGHT / 2 + 72, 'QUIT', () => {
+      this.scene.start('Home')
     })
   }
 
@@ -55,3 +60,4 @@ export class GameOver extends Phaser.Scene {
       .on('pointerdown', cb)
   }
 }
+

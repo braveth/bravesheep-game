@@ -1,4 +1,4 @@
-import { type IChapter, type ChapterConstructor, CHAPTER_ORDER } from '../chapters'
+import { type IChapter, type IRunnerConfig, type IBossConfig, type ChapterConstructor, CHAPTER_ORDER } from '../chapters'
 
 export const PHASE = { RUNNER: 'runner', BOSS: 'boss' } as const
 export type Phase = typeof PHASE[keyof typeof PHASE]
@@ -6,33 +6,32 @@ export type Phase = typeof PHASE[keyof typeof PHASE]
 export class ChapterState {
   private _index         = 0
   private _phase: Phase  = PHASE.RUNNER
-  private _transitioning = false
-  private _instance: IChapter = this.loadChapter(0)
+  private _instance!:    IChapter
 
-  get index():   number   { return this._index }
-  get phase():   Phase    { return this._phase }
-  get chapter(): IChapter { return this._instance }
+  constructor(startIndex = 0) {
+    this._index    = startIndex
+    this._instance = this.loadChapter(startIndex)
+  }
+
+  get index():        number        { return this._index }
+  get phase():        Phase         { return this._phase }
+  get runnerConfig(): IRunnerConfig { return this._instance }
+  get bossConfig():   IBossConfig   { return this._instance }
 
   startBoss(): void {
     if (this._phase !== PHASE.RUNNER) return
     this._phase = PHASE.BOSS
-    this._transitioning = false
   }
 
-  startRunner(): boolean {
-    if (this._phase !== PHASE.BOSS || this._transitioning) return false
-    this._transitioning = true
-    this._index++
-    this._phase    = PHASE.RUNNER
-    this._instance = this.loadChapter(this._index)
-    return true
+  /** Dev-only: exit boss phase without advancing the chapter. */
+  cancelBoss(): void {
+    this._phase = PHASE.RUNNER
   }
 
   reset(): void {
-    this._index         = 0
-    this._phase         = PHASE.RUNNER
-    this._transitioning = false
-    this._instance      = this.loadChapter(0)
+    this._index    = 0
+    this._phase    = PHASE.RUNNER
+    this._instance = this.loadChapter(0)
   }
 
   private loadChapter(index: number): IChapter {

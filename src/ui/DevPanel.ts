@@ -25,16 +25,15 @@ const PANEL_W = 148
 const PANEL_X = 0   // flush to left edge
 
 export class DevPanel {
-  private text:     Phaser.GameObjects.Text
-  private biomeBtn: Phaser.GameObjects.Text
-  private bossBtn:  Phaser.GameObjects.Text
+  private text:       Phaser.GameObjects.Text
+  private chapterBtn: Phaser.GameObjects.Text
+  private bossBtn:    Phaser.GameObjects.Text
 
   constructor(
-    scene: Phaser.Scene,
-    onBiome: () => void,
-    onBoss:  () => void,
+    scene:     Phaser.Scene,
+    onChapter: () => void,
+    onBoss:    () => void,
   ) {
-    // Full-height background panel on the right
     scene.add.rectangle(PANEL_X, 0, PANEL_W, WORLD.HEIGHT, 0x000000, 0.78)
       .setOrigin(0, 0)
       .setDepth(50)
@@ -46,6 +45,11 @@ export class DevPanel {
       lineSpacing: 4,
     }).setDepth(51)
 
+    // Seed text with representative lines to measure height before placing buttons
+    this.text.setText(Array(18).fill('M'.repeat(14)).join('\n'))
+    const btnY = Math.ceil(this.text.getBounds().bottom) + 10
+    this.text.setText('')
+
     const btnStyle = {
       fontSize: '12px',
       color: '#ffffff',
@@ -53,16 +57,16 @@ export class DevPanel {
       padding: { x: 8, y: 5 },
     }
 
-    this.biomeBtn = scene.add
-      .text(PANEL_X + 8, WORLD.HEIGHT - 58, '[Rural]', btnStyle)
+    this.chapterBtn = scene.add
+      .text(PANEL_X + 8, btnY, '[Rural]', btnStyle)
       .setOrigin(0, 0).setDepth(51)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', function(this: Phaser.GameObjects.Text) { this.setColor('#ffff88') })
       .on('pointerout',  function(this: Phaser.GameObjects.Text) { this.setColor('#ffffff') })
-      .on('pointerdown', onBiome)
+      .on('pointerdown', onChapter)
 
     this.bossBtn = scene.add
-      .text(PANEL_X + 8, WORLD.HEIGHT - 30, '[Runner]', btnStyle)
+      .text(PANEL_X + 8, btnY + 32, '[Runner]', btnStyle)
       .setOrigin(0, 0).setDepth(51)
       .setInteractive({ useHandCursor: true })
       .on('pointerover', function(this: Phaser.GameObjects.Text) { this.setColor('#ffff88') })
@@ -98,6 +102,6 @@ export class DevPanel {
     this.text.setText(lines.join('\n'))
   }
 
-  setBiomeLabel(label: string): void { this.biomeBtn.setText(label) }
-  setBossLabel(label: string): void  { this.bossBtn.setText(label) }
+  setChapterLabel(label: string): void { this.chapterBtn.setText(label) }
+  setBossLabel(label: string): void    { this.bossBtn.setText(label) }
 }

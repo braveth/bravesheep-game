@@ -2,6 +2,8 @@ import Phaser from 'phaser'
 import { AIRPLANE } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { AirVehicle } from './base/AirVehicle'
+import type { IAirDropSpawnConfig } from './base/AirVehicle'
+import { Bomb } from './Bomb'
 
 /**
  * Airplane — urban air enemy.
@@ -10,11 +12,16 @@ import { AirVehicle } from './base/AirVehicle'
  * px ahead of the hero.  Each bomb is released at the plane's current X.
  */
 export class Airplane extends AirVehicle {
+  static readonly spawnConfig: IAirDropSpawnConfig = {
+    payloadClass:        Bomb,
+    payloadIsProjectile: true,
+    payloadHasShadow:    true,
+  }
   constructor(group: Phaser.Physics.Arcade.Group, heroX: number) {
     super(
       group, heroX, AIRPLANE.FLY_Y, TEX.AIRPLANE,
       AIRPLANE.HP, AIRPLANE.SPEED, AIRPLANE.DROP_LEAD,
-      50,  // spawnOffset
+      AIRPLANE.SPAWN_OFFSET,
     )
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body

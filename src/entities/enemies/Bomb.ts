@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { BOMB, AIRPLANE } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
+import { BaseAirdrop } from './base/BaseAirdrop'
 
 /**
  * Bomb — dropped by Airplane.
@@ -9,14 +10,15 @@ import { WORLD } from '../../config/world'
  * Bounces on the ground (Arcade Physics bounce) up to MAX_BOUNCES times.
  * Only damages the hero on direct contact — it does NOT explode on landing.
  */
-export class Bomb {
+export class Bomb extends BaseAirdrop {
   readonly sprite: Phaser.Physics.Arcade.Sprite
 
   private bounceCount  = 0
   private wasOnGround  = false
 
-  constructor(group: Phaser.Physics.Arcade.Group, dropX: number, heroX: number) {
-    this.sprite = group.create(dropX, AIRPLANE.FLY_Y + 20, TEX.BOMB) as Phaser.Physics.Arcade.Sprite
+  constructor(group: Phaser.Physics.Arcade.Group, dropX: number, dropY: number, heroX: number) {
+    super()
+    this.sprite = group.create(dropX, dropY, TEX.BOMB) as Phaser.Physics.Arcade.Sprite
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(BOMB.HIT_W, BOMB.HIT_H)
@@ -25,22 +27,21 @@ export class Bomb {
       (BOMB.SPRITE_H - BOMB.HIT_H) / 2,
     )
     body.setGravityY(BOMB.GRAVITY)
-    body.setMaxVelocityY(900)
+    body.setMaxVelocityY(BOMB.MAX_FALL_SPEED)
     body.setCollideWorldBounds(false)
-    // Bounce coefficient — Phaser multiplies post-collision vertical velocity
-    body.setBounce(0, 0.65)
+    body.setBounce(0, BOMB.BOUNCE)
 
     // Aim initial horizontal velocity toward hero
     const dx = heroX - dropX
-    // Time of first fall from FLY_Y to GROUND_Y under gravity
-    const fallH   = WORLD.GROUND_Y - AIRPLANE.FLY_Y - BOMB.SPRITE_H
+    // Time of first fall from dropY to GROUND_Y under gravity
+    const fallH   = WORLD.GROUND_Y - dropY - BOMB.SPRITE_H
     const tFall   = Math.sqrt((2 * fallH) / BOMB.GRAVITY)
     const rawVx   = fallH > 0 ? dx / tFall : 0
     body.setVelocityX(Phaser.Math.Clamp(rawVx, -380, 380))
   }
 
-  /** Call each frame; returns true when the bomb should be removed. */
-  update(): boolean {
+  /** Called each frame. Returns true when the bomb should be removed. */
+  tick(_time: number, _heroX: number, _scrollSpeed: number): boolean {
     const body     = this.sprite.body as Phaser.Physics.Arcade.Body
     const onGround = body.blocked.down
 

@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { WORLD } from '../config/world'
 import { HERO } from '../config/hero'
 import { TEX } from '../config/textures'
+import { EVENTS } from '../config/events'
 import type { VirtualInput } from '../ui/MobileControls'
 
 type HeroState = 'idle' | 'run' | 'jump' | 'fall'
@@ -172,6 +173,7 @@ export class Hero {
       yoyo:     true,
       onComplete: () => { this.sprite.setAlpha(1) },
     })
+    this.scene.events.emit(EVENTS.HERO_HP, this.hp)
     return true
   }
 

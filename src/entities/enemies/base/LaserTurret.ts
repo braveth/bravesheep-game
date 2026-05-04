@@ -1,9 +1,21 @@
 import Phaser from 'phaser'
 import { BaseEnemy } from './BaseEnemy'
-import { FAT_CAT } from '../../../config/enemies'
+import { LASER_TURRET } from '../../../config/enemies'
 import { WORLD } from '../../../config/world'
+import { LaserTurretSpawner } from '../../spawners/LaserTurretSpawner'
+
+export interface ITurretSpawnConfig {
+  spawnOffsetX: number
+}
+
+/** Constructor type that enforces a static spawnConfig is present. */
+export type LaserTurretClass<T extends LaserTurret = LaserTurret> = {
+  new(scene: Phaser.Scene, group: Phaser.Physics.Arcade.Group, x: number): T
+  readonly spawnConfig: ITurretSpawnConfig
+}
 
 export abstract class LaserTurret extends BaseEnemy {
+  static readonly spawner = LaserTurretSpawner
   private fireSchedule: Array<{ at: number; shot: 0 | 1 }> = []
   private scheduleBuilt = false
 
@@ -46,7 +58,7 @@ export abstract class LaserTurret extends BaseEnemy {
       // Gaps between shots are quadratic-decreasing (largest gap first, tightest last).
       // Shot 0 fires immediately; only inter-shot gaps consume the window.
       // gapSum = sum of j² for j=1..(n-1) = (n-1)*n*(2n-1)/6
-      const window  = FAT_CAT.LASER_FIRE_WINDOW * speedFactor
+      const window  = LASER_TURRET.FIRE_WINDOW * speedFactor
       const n       = maxShots
       const gapSum  = (n - 1) * n * (2 * n - 1) / 6
       const si      = gapSum > 0 ? window / gapSum : 0
@@ -80,6 +92,8 @@ export abstract class LaserTurret extends BaseEnemy {
     }
     return -1
   }
+
+  abstract update(time: number, scrollSpeed: number, heroX: number, maxShots: number, speedFactor: number): 0 | 1 | -1
 
   get isOffScreen(): boolean { return this.sprite.x < -120 }
 }

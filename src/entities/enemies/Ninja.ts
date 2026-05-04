@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { NINJA } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
+import { BaseAirdrop } from './base/BaseAirdrop'
 
 /**
  * Ninja — drops from Helicopter, then BOUNCES toward the hero.
@@ -9,7 +10,7 @@ import { WORLD } from '../../config/world'
  * The player must duck under the arc or move out of the way.
  * No shuriken — pure jump threat.
  */
-export class Ninja {
+export class Ninja extends BaseAirdrop {
   readonly sprite: Phaser.Physics.Arcade.Sprite
 
   private inAir          = true   // true while still falling from drop
@@ -18,6 +19,7 @@ export class Ninja {
   private readonly moveDir: number
 
   constructor(group: Phaser.Physics.Arcade.Group, x: number, dropY: number, heroX: number) {
+    super()
     // +1 = move right (hero is right of drop), -1 = move left
     this.moveDir = heroX >= x ? 1 : -1
 
@@ -30,7 +32,7 @@ export class Ninja {
       NINJA.SPRITE_H - NINJA.HIT_H,
     )
     body.setGravityY(NINJA.GRAVITY)
-    body.setMaxVelocityY(900)
+    body.setMaxVelocityY(NINJA.MAX_FALL_SPEED)
     body.setCollideWorldBounds(false)
     body.setVelocityX(0)  // drop straight down initially
 
@@ -38,7 +40,7 @@ export class Ninja {
     this.sprite.setData('hp', NINJA.HP)
   }
 
-  update(time: number, _heroX: number, _scrollSpeed: number): void {
+  tick(time: number, _heroX: number, _scrollSpeed: number): boolean {
     const body     = this.sprite.body as Phaser.Physics.Arcade.Body
     const onGround = body.blocked.down
 
@@ -56,6 +58,8 @@ export class Ninja {
         this.inAir = true
       }
     }
+
+    return this.isDead || this.isOffScreen
   }
 
   get hp():          number  { return this.sprite.getData('hp') as number }

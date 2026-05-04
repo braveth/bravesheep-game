@@ -1,5 +1,6 @@
 import Phaser from 'phaser'
 import { TEX } from '../../config/textures'
+import { BOSS_CAT } from '../../config/enemies'
 import { BaseBoss } from './base/BaseBoss'
 
 export class BossCat extends BaseBoss {
@@ -10,16 +11,16 @@ export class BossCat extends BaseBoss {
   }
 
   protected onEntered(time: number): void {
-    this.nextFireTime = time + 1200
+    this.nextFireTime = time + BOSS_CAT.FIRE_DELAY_ENTER
   }
 
   protected onReturned(time: number): void {
-    this.nextFireTime = time + 500
+    this.nextFireTime = time + BOSS_CAT.FIRE_DELAY_RETURN
   }
 
   protected onIdle(time: number): number {
     if (time >= this.nextFireTime) {
-      this.nextFireTime = time + 700
+      this.nextFireTime = time + BOSS_CAT.FIRE_INTERVAL
       return this.sprite.y
     }
     return -1

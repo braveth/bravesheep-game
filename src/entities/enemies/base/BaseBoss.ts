@@ -1,5 +1,5 @@
 import Phaser from 'phaser'
-import { BOSS } from '../../../config/enemies'
+import { BOSS, LASER_TURRET } from '../../../config/enemies'
 import { WORLD } from '../../../config/world'
 
 type BossPhase = 'enter' | 'idle' | 'charge' | 'return' | 'dead'
@@ -18,7 +18,7 @@ export abstract class BaseBoss {
     heroRef: { x: number },
   ) {
     void heroRef
-    this.arenaX = WORLD.WIDTH * 0.68
+    this.arenaX = WORLD.WIDTH * BOSS.ARENA_X_FRAC
 
     const y = WORLD.GROUND_Y - BOSS.SPRITE_H / 2
     this.sprite = group.create(WORLD.WIDTH + BOSS.SPRITE_W, y, texKey) as Phaser.Physics.Arcade.Sprite
@@ -26,12 +26,27 @@ export abstract class BaseBoss {
     const body = this.sprite.body as Phaser.Physics.Arcade.Body
     body.setSize(BOSS.HIT_W, BOSS.HIT_H)
     body.setOffset((BOSS.SPRITE_W - BOSS.HIT_W) / 2, BOSS.SPRITE_H - BOSS.HIT_H)
-    body.setGravityY(800)
-    body.setMaxVelocityY(800)
+    body.setGravityY(BOSS.GRAVITY)
+    body.setMaxVelocityY(BOSS.MAX_FALL_SPEED)
     body.setCollideWorldBounds(false)
     this.sprite.setFlipX(true)
     this.sprite.setData('hp', BOSS.HP)
   }
+
+  /** Determines whether the hero contact should count as a stomp. */
+  static isStomped(
+    heroBody: Phaser.Physics.Arcade.Body,
+    bossBody: Phaser.Physics.Arcade.Body,
+  ): boolean {
+    return heroBody.velocity.y > 60 && heroBody.bottom <= bossBody.top + 12
+  }
+
+  /** Laser projectile parameters used by EnemySpawner.tickBoss. */
+  readonly laserConfig = {
+    width:  LASER_TURRET.WIDTH,
+    height: LASER_TURRET.HEIGHT,
+    speed:  Math.round(LASER_TURRET.SPEED * 1.5),
+  } as const
 
   /**
    * Called each frame while the boss is idling.
@@ -53,7 +68,7 @@ export abstract class BaseBoss {
       if (this.sprite.x <= this.arenaX) {
         body.setVelocityX(0)
         this.phase         = 'idle'
-        this.nextPhaseTime = time + 800
+        this.nextPhaseTime = time + BOSS.ENTER_PAUSE
         this.onEntered(time)
       }
       return -1

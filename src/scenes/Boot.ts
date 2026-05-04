@@ -17,7 +17,6 @@ export class Boot extends Phaser.Scene {
     this.makeUrbanTexture()
     this.makeHelicopterTexture()
     this.makeNinjaTexture()
-    this.makeShurikenTexture()
     this.makeAirplaneTexture()
     this.makeBombTexture()
     this.makeLimoTexture()
@@ -392,28 +391,6 @@ export class Boot extends Phaser.Scene {
     g.fillTriangle(17, 8, 19, 8, 18, 4)
 
     g.generateTexture(TEX.NINJA, 20, 32)
-    g.destroy()
-  }
-
-  // ── Shuriken: 12×12 px ─────────────────────────────────────────────────
-  private makeShurikenTexture(): void {
-    const g = this.make.graphics({ x: 0, y: 0 }, false)
-
-    g.fillStyle(0x888888)
-    // Four-pointed star by two overlapping rects rotated
-    g.fillRect(4, 0, 4, 12)
-    g.fillRect(0, 4, 12, 4)
-    // Diagonal blades
-    g.fillTriangle(0, 0, 4, 4, 6, 0)
-    g.fillTriangle(12, 0, 8, 4, 6, 0)
-    g.fillTriangle(0, 12, 4, 8, 6, 12)
-    g.fillTriangle(12, 12, 8, 8, 6, 12)
-
-    // Centre bolt
-    g.fillStyle(0x333333)
-    g.fillCircle(6, 6, 2)
-
-    g.generateTexture(TEX.SHURIKEN, 12, 12)
     g.destroy()
   }
 

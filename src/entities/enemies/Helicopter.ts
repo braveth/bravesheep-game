@@ -2,6 +2,8 @@ import Phaser from 'phaser'
 import { HELICOPTER } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { AirVehicle } from './base/AirVehicle'
+import type { IAirDropSpawnConfig } from './base/AirVehicle'
+import { Ninja } from './Ninja'
 
 /**
  * Helicopter — rural air enemy.
@@ -10,12 +12,17 @@ import { AirVehicle } from './base/AirVehicle'
  * px ahead of the hero.  Each ninja is released at the helicopter's current X.
  */
 export class Helicopter extends AirVehicle {
+  static readonly spawnConfig: IAirDropSpawnConfig = {
+    payloadClass:        Ninja,
+    payloadIsProjectile: false,
+    payloadHasShadow:    false,
+  }
   constructor(group: Phaser.Physics.Arcade.Group, heroX: number) {
     const flyY = Phaser.Math.Between(HELICOPTER.FLY_Y_MIN, HELICOPTER.FLY_Y_MAX)
     super(
       group, heroX, flyY, TEX.HELICOPTER,
       HELICOPTER.HP, HELICOPTER.SPEED, HELICOPTER.DROP_LEAD,
-      80,  // spawnOffset: how far past screen edge
+      HELICOPTER.SPAWN_OFFSET,
     )
 
     const body = this.sprite.body as Phaser.Physics.Arcade.Body

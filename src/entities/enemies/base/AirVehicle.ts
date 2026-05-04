@@ -1,6 +1,21 @@
 import Phaser from 'phaser'
 import { BaseEnemy } from './BaseEnemy'
 import { WORLD } from '../../../config/world'
+import type { BaseAirdrop } from './BaseAirdrop'
+import { AirVehicleSpawner } from '../../spawners/AirVehicleSpawner'
+import { AIR_VEHICLE } from '../../../config/enemies'
+
+export interface IAirDropSpawnConfig {
+  payloadClass:        new (group: Phaser.Physics.Arcade.Group, x: number, y: number, heroX: number) => BaseAirdrop
+  payloadIsProjectile: boolean  // true = damageAndDestroy on contact, false = damage only
+  payloadHasShadow:    boolean
+}
+
+/** Constructor type that enforces a static spawnConfig is present. */
+export type AirVehicleClass<T extends AirVehicle = AirVehicle> = {
+  new(group: Phaser.Physics.Arcade.Group, heroX: number): T
+  readonly spawnConfig: IAirDropSpawnConfig
+}
 
 /**
  * Base class for air vehicles that drop payloads (Helicopter, Airplane).
@@ -17,6 +32,7 @@ import { WORLD } from '../../../config/world'
  *  - Set hitbox (body.setSize / setOffset) — base handles gravity/velocity/flip
  */
 export abstract class AirVehicle extends BaseEnemy {
+  static readonly spawner = AirVehicleSpawner
   readonly spawnFromRight: boolean
 
   protected readonly dropTriggerX: number
@@ -94,10 +110,12 @@ export abstract class AirVehicle extends BaseEnemy {
     return -1
   }
 
+  abstract update(time: number, heroX: number, scrollSpeed: number, dropCount: number, speedFactor: number): number
+
   get isOffScreen(): boolean {
     return this.spawnFromRight
-      ? this.sprite.x < -200
-      : this.sprite.x > WORLD.WIDTH + 200
+      ? this.sprite.x < -AIR_VEHICLE.OFF_SCREEN_MARGIN
+      : this.sprite.x > WORLD.WIDTH + AIR_VEHICLE.OFF_SCREEN_MARGIN
   }
 
   /** Dims sprite when shot down. */
