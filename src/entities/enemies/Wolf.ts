@@ -32,6 +32,6 @@ export class Wolf extends PackCharger {
   }
 
   update(time: number, _heroX: number, scrollSpeed: number): void {
-    this.advance(time, scrollSpeed, this.chargeSpeed || WOLF.SPEED)
+    this.advance(time, scrollSpeed, this.chargeSpeed ?? WOLF.SPEED)
   }
 }

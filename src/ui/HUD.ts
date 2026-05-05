@@ -10,7 +10,9 @@ export class HUD {
   private bossBarBg?: Phaser.GameObjects.Rectangle
   private bossBarFg?: Phaser.GameObjects.Rectangle
   private bossLabel?: Phaser.GameObjects.Text
-  private bossMaxHp   = 1
+  private bossMaxHp      = 1
+  private lastDistMetres = -1
+  private lastLevel      = -1
 
   constructor(scene: Phaser.Scene, maxHp: number) {
     this.scene   = scene
@@ -62,10 +64,14 @@ export class HUD {
   }
 
   setDistance(metres: number): void {
+    if (metres === this.lastDistMetres) return
+    this.lastDistMetres = metres
     this.distText.setText(`${metres} m`)
   }
 
   setLevel(level: number): void {
+    if (level === this.lastLevel) return
+    this.lastLevel = level
     this.levelBadge.setText(`LV ${level + 1}`)
   }
 

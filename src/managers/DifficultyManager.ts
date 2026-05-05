@@ -3,14 +3,14 @@ import { WORLD } from '../config/world'
 
 export class DifficultyManager {
   private elapsed = 0   // seconds since last reset
-  private _metresOffset = 0   // cumulative metres from previous runs
+  private metresOffset = 0   // cumulative metres from previous runs
 
   update(delta: number): void {
     this.elapsed += delta / 1000
   }
 
   reset(): void {
-    this._metresOffset += this.metres
+    this.metresOffset += this.metres
     this.elapsed = 0
   }
 
@@ -36,8 +36,6 @@ export class DifficultyManager {
    */
   get speedFactor(): number   { return DIFFICULTY.scrollSpeed / this.scrollSpeed }
 
-  get tier(): number { return this.level }
-
   /** Seconds until the next level tick (0 if already at max level). */
   get nextLevelIn(): number {
     if (this.level >= DIFFICULTY.levelMax) return 0
@@ -45,5 +43,5 @@ export class DifficultyManager {
   }
 
   /** Distance travelled in "metres" (1 m = 10 px of scroll), cumulative across resets. */
-  get metres(): number { return this._metresOffset + Math.floor(this.elapsed * WORLD.INITIAL_SCROLL_SPEED / 10) }
+  get metres(): number { return this.metresOffset + Math.floor(this.elapsed * WORLD.INITIAL_SCROLL_SPEED / 10) }
 }

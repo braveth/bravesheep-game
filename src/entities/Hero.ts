@@ -17,7 +17,7 @@ export class Hero {
 
   private state: HeroState = 'idle'
   private virtual: VirtualInput | null = null
-  private _prevVirtualUp = false
+  private prevVirtualUp = false
 
   // Damage
   hp    = 3
@@ -62,8 +62,8 @@ export class Hero {
     // Consume jump input once per press and store timestamp
     const jumpJustPressed =
       Phaser.Input.Keyboard.JustDown(this.jumpKey) ||
-      (this.virtual?.up === true && !this._prevVirtualUp)
-    this._prevVirtualUp = this.virtual?.up ?? false
+      (this.virtual?.up === true && !this.prevVirtualUp)
+    this.prevVirtualUp = this.virtual?.up ?? false
     if (jumpJustPressed && !this.hasJumped) this.jumpPressedTime = time
 
     const jumpHeld  = this.jumpKey.isDown || (this.virtual?.up ?? false)
@@ -184,8 +184,6 @@ export class Hero {
 
   // Spawn position helper — used by Game scene to place hero on ground
   static spawnY(): number {
-    // Body bottom aligns with GROUND_Y; sprite center is above that.
-    // With origin (0.5, 0.5): body bottom = sprite.y + 24 → sprite.y = GROUND_Y - 24
-    return WORLD.GROUND_Y - 24
+    return WORLD.GROUND_Y - HERO.SPRITE_H / 2
   }
 }

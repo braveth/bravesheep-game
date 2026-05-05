@@ -38,8 +38,8 @@ export abstract class PackCharger extends BaseEnemy {
   isPackLeader = false
   /** Ms after packTrigger.armedAt when this unit starts charging. */
   chargeDelay = 0
-  /** Charge speed override (px/s).  0 = use the subclass default. */
-  chargeSpeed = 0
+  /** Charge speed override (px/s).  null = use the subclass default. */
+  chargeSpeed: number | null = null
 
   protected charging = false
 

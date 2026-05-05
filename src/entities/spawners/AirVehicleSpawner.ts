@@ -7,9 +7,8 @@ import type { ICollisionRegistrar } from '../../managers/CollisionManager'
 import type { ISpawner, LevelConfig } from './ISpawner'
 
 export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
-  private vehicles: T[]           = []
-  private payloads: BaseAirdrop[] = []
-  private shadows:  Phaser.GameObjects.Rectangle[] = []
+  private vehicles: T[] = []
+  private drops: Array<{ payload: BaseAirdrop; shadow: Phaser.GameObjects.Rectangle | null }> = []
 
   private readonly scene:        Phaser.Scene
   private readonly vehicleGroup: Phaser.Physics.Arcade.Group
@@ -37,34 +36,29 @@ export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
       const idx = v.update(time, heroX, scrollSpeed, config.airDropCount, config.speedFactor)
       if (idx !== -1) this.drop(v, heroX)
     }
-    // Tick payloads once; filter out done ones in the same pass
-    this.payloads = this.payloads.filter(p => {
-      if (!p.sprite.body) return false  // destroyed by collision callback
-      const done = p.tick(time, heroX, scrollSpeed)
-      if (done) { p.sprite.destroy(); return false }
+    this.drops = this.drops.filter(({ payload, shadow }) => {
+      if (!payload.sprite.body) { shadow?.destroy(); return false }
+      const done = payload.tick(time, heroX, scrollSpeed)
+      if (done) { payload.sprite.destroy(); shadow?.destroy(); return false }
       return true
     })
     this.purgeVehicles()
-    this.purgeShadows()
   }
 
   clear(): void {
     for (const v of this.vehicles) v.sprite.destroy()
-    for (const p of this.payloads) p.sprite.destroy()
-    for (const sh of this.shadows) sh.destroy()
+    for (const { payload, shadow } of this.drops) { payload.sprite.destroy(); shadow?.destroy() }
     this.vehicles = []
-    this.payloads = []
-    this.shadows  = []
+    this.drops    = []
   }
 
   private drop(vehicle: T, heroX: number): void {
     const { payloadClass, payloadHasShadow } = this.Cls.spawnConfig
-    const p = new payloadClass(this.payloadGroup, vehicle.sprite.x, vehicle.sprite.y + 20, heroX)
-    this.payloads.push(p)
-    if (payloadHasShadow) {
-      const sh = this.scene.add.rectangle(vehicle.sprite.x, WORLD.GROUND_Y - 4, 20, 8, 0xff4400, 0.5).setDepth(4)
-      this.shadows.push(sh)
-    }
+    const payload = new payloadClass(this.payloadGroup, vehicle.sprite.x, vehicle.sprite.y + 20, heroX)
+    const shadow  = payloadHasShadow
+      ? this.scene.add.rectangle(vehicle.sprite.x, WORLD.GROUND_Y - 4, 20, 8, 0xff4400, 0.5).setDepth(4)
+      : null
+    this.drops.push({ payload, shadow })
   }
 
   private purgeVehicles(): void {
@@ -74,14 +68,5 @@ export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
         this.vehicles.splice(i, 1)
       }
     }
-  }
-
-  private purgeShadows(): void {
-    this.shadows = this.shadows.filter(sh => {
-      if (!sh.active) return false
-      const alive = this.payloads.some(p => Math.abs(p.sprite.x - sh.x) < 80)
-      if (!alive) { sh.destroy(); return false }
-      return true
-    })
   }
 }

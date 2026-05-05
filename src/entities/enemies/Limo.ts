@@ -28,7 +28,7 @@ export class Limo extends PackCharger {
   }
 
   update(time: number, _heroX: number, scrollSpeed: number): void {
-    this.advance(time, scrollSpeed, this.chargeSpeed || LIMO.SPEED)
+    this.advance(time, scrollSpeed, this.chargeSpeed ?? LIMO.SPEED)
   }
 }
 

@@ -16,8 +16,8 @@ export type LaserTurretClass<T extends LaserTurret = LaserTurret> = {
 
 export abstract class LaserTurret extends BaseEnemy {
   static readonly spawner = LaserTurretSpawner
-  private fireSchedule: Array<{ at: number; shot: 0 | 1 }> = []
-  private scheduleBuilt = false
+  private fireSchedule:   Array<{ at: number; shot: 0 | 1 }> = []
+  private fireScheduleIdx = 0
 
   constructor(
     scene:      Phaser.Scene,
@@ -52,9 +52,7 @@ export abstract class LaserTurret extends BaseEnemy {
 
     if (this.sprite.x > WORLD.WIDTH) return -1
 
-    if (!this.scheduleBuilt) {
-      this.scheduleBuilt = true
-
+    if (this.fireSchedule.length === 0) {
       // Gaps between shots are quadratic-decreasing (largest gap first, tightest last).
       // Shot 0 fires immediately; only inter-shot gaps consume the window.
       // gapSum = sum of j² for j=1..(n-1) = (n-1)*n*(2n-1)/6
@@ -74,7 +72,7 @@ export abstract class LaserTurret extends BaseEnemy {
         ;[shotTypes[k], shotTypes[j]] = [shotTypes[j], shotTypes[k]]
       }
 
-      // Push shot 0 immediately, then add descending quadratic gap before each next shot.
+      // Assign timestamps: shot 0 fires immediately, descending quadratic gaps between shots.
       let t = time
       for (let k = 0; k < maxShots; k++) {
         this.fireSchedule.push({ at: t, shot: shotTypes[k] })
@@ -82,13 +80,14 @@ export abstract class LaserTurret extends BaseEnemy {
       }
     }
 
-    if (this.fireSchedule.length === 0) return -1
+    if (this.fireScheduleIdx >= this.fireSchedule.length) return -1
 
-    if (time >= this.fireSchedule[0].at) {
+    const next = this.fireSchedule[this.fireScheduleIdx]
+    if (time >= next.at) {
       // Defer (don't discard) if hero is too close — retry next frame
       if (Math.abs(this.sprite.x - heroX) < minFireDist) return -1
-      const { shot } = this.fireSchedule.shift()!
-      return shot
+      this.fireScheduleIdx++
+      return next.shot
     }
     return -1
   }

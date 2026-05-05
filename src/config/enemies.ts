@@ -43,9 +43,7 @@ export const HELICOPTER = {
   HIT_H:            24,
   FLY_Y_MIN:       160,
   FLY_Y_MAX:       220,
-  SPEED:           120,    // faster than before
-  HOVER_DURATION: 1000,    // (unused -- no hover, kept for reference)
-  NINJA_DROP_COUNT:  3,    // always drop exactly 3
+  SPEED:           120,
   DROP_LEAD:       320,    // px from hero where first ninja is released
   DROP_INTERVAL:   150,   // ms between consecutive ninja releases (constant, scaled by speedFactor)
   SPAWN_OFFSET:     80,   // px past screen edge to spawn at
@@ -72,8 +70,7 @@ export const AIRPLANE = {
   HIT_W:            68,
   HIT_H:            20,
   FLY_Y:            80,
-  SPEED:            80,    // faster than before
-  BOMB_DROP_COUNT:   3,    // drops 3 bombs per pass (sequential)
+  SPEED:            80,
   DROP_LEAD:       300,    // px from hero where first bomb is released
   DROP_INTERVAL:   150,   // ms between consecutive bomb releases (constant, scaled by speedFactor)
   SPAWN_OFFSET:     50,   // px past screen edge to spawn at
@@ -144,12 +141,6 @@ export const AIR_VEHICLE = {
 } as const
 
 // Spawn configuration -- controls what appears in each biome slot
-export const SPAWN_CONFIG = {
-  simultaneous:     false,   // air + ground at the same time?
-  maxGroundActive:      1,   // max concurrent ground enemy groups
-  maxAirActive:         1,   // max concurrent air enemy groups
-} as const
-
 export const DIFFICULTY = {
   // ── Base values (level 0) ───────────────────────────────────────────────
   scrollSpeed:   150,   // px/s
