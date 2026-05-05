@@ -1,8 +1,7 @@
 import Phaser from 'phaser'
-import type { ISpawner } from '../entities/interfaces/ISpawner'
-import type { ICollisionRegistrar } from '../entities/interfaces/ICollisionRegistrar'
+import type { ISpawner, LevelConfig } from '../entities/spawners/ISpawner'
+import type { ICollisionRegistrar } from './CollisionManager'
 import type { IRunnerConfig, EnemyClass } from '../chapters/IChapter'
-import type { LevelConfig } from '../config/LevelConfig'
 
 export class SpawnerManager {
   private readonly spawnerMap:   Map<EnemyClass, ISpawner>

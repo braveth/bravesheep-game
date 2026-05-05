@@ -2,9 +2,8 @@ import Phaser from 'phaser'
 import { PackCharger } from '../enemies/base/PackCharger'
 import type { PackChargerClass } from '../enemies/base/PackCharger'
 import { WORLD } from '../../config/world'
-import type { ICollisionRegistrar } from '../interfaces/ICollisionRegistrar'
-import type { ISpawner } from '../interfaces/ISpawner'
-import type { LevelConfig } from '../../config/LevelConfig'
+import type { ICollisionRegistrar } from '../../managers/CollisionManager'
+import type { ISpawner, LevelConfig } from './ISpawner'
 
 export class PackChargerSpawner<T extends PackCharger> implements ISpawner {
   private readonly bodyGroup: Phaser.Physics.Arcade.Group

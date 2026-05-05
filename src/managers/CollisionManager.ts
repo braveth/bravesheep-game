@@ -1,8 +1,17 @@
 import Phaser from 'phaser'
 import { BaseBoss } from '../entities/enemies/base/BaseBoss'
-import type { ICollisionRegistrar } from '../entities/interfaces/ICollisionRegistrar'
-import type { IStompHandler } from '../entities/interfaces/IStompHandler'
 import type { Hero } from '../entities/Hero'
+
+export interface IStompHandler {
+  onStomp(): void
+}
+
+export interface ICollisionRegistrar {
+  addGroundCollider(group: Phaser.Physics.Arcade.Group): void
+  addBodyOverlap(group: Phaser.Physics.Arcade.Group): void
+  addProjectileOverlap(group: Phaser.Physics.Arcade.Group): void
+  addStompOverlap(group: Phaser.Physics.Arcade.Group, handler: IStompHandler): void
+}
 
 export class CollisionManager implements ICollisionRegistrar {
   constructor(
@@ -10,6 +19,10 @@ export class CollisionManager implements ICollisionRegistrar {
     private readonly groundBody: Phaser.GameObjects.Rectangle,
     private readonly hero:       Hero,
   ) {}
+
+  registerHero(): void {
+    this.scene.physics.add.collider(this.hero.sprite, this.groundBody)
+  }
 
   addGroundCollider(group: Phaser.Physics.Arcade.Group): void {
     this.scene.physics.add.collider(group, this.groundBody)

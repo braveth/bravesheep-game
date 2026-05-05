@@ -1,5 +1,5 @@
 import type { BaseBoss } from '../entities/enemies/base/BaseBoss'
-import type { SpawnerCtor } from '../entities/interfaces/ISpawner'
+import type { SpawnerCtor } from '../entities/spawners/ISpawner'
 
 export type BossConstructor = new (
   group:   Phaser.Physics.Arcade.Group,

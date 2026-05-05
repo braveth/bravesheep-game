@@ -38,6 +38,7 @@ export class Bomb extends BaseAirdrop {
     const tFall   = Math.sqrt((2 * fallH) / BOMB.GRAVITY)
     const rawVx   = fallH > 0 ? dx / tFall : 0
     body.setVelocityX(Phaser.Math.Clamp(rawVx, -380, 380))
+    this.sprite.setFlipX(heroX < dropX)
   }
 
   /** Called each frame. Returns true when the bomb should be removed. */

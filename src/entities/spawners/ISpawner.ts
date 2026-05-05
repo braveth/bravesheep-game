@@ -1,6 +1,14 @@
 import type Phaser from 'phaser'
-import type { ICollisionRegistrar } from './ICollisionRegistrar'
-import type { LevelConfig } from '../../config/LevelConfig'
+import type { ICollisionRegistrar } from '../../managers/CollisionManager'
+
+export type LevelConfig = {
+  waveInterval:  number
+  turretShots:   number
+  airDropCount:  number
+  packCount:     number
+  packSpeedMult: number
+  speedFactor:   number
+}
 
 export interface ISpawner {
   spawn(config: LevelConfig, heroX: number): void

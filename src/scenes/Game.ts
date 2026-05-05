@@ -1,17 +1,17 @@
 import Phaser from 'phaser'
 import { Hero } from '../entities/Hero'
-import { SpawnerManager } from '../systems/SpawnerManager'
-import { CollisionManager } from '../systems/CollisionManager'
+import { SpawnerManager } from '../managers/SpawnerManager'
+import { CollisionManager } from '../managers/CollisionManager'
 import { BossSpawner } from '../entities/spawners/BossSpawner'
-import { DifficultyManager } from '../systems/DifficultyManager'
-import { ChapterState, PHASE } from '../systems/ChapterState'
-import { WorldRenderer } from '../systems/WorldRenderer'
+import { DifficultyManager } from '../managers/DifficultyManager'
+import { ChapterState, PHASE } from '../managers/ChapterState'
+import { WorldRenderer } from '../managers/WorldRenderer'
 import { HUD } from '../ui/HUD'
 import { DevPanel } from '../ui/DevPanel'
 import { MobileControls } from '../ui/MobileControls'
 import { WORLD } from '../config/world'
 import { DIFFICULTY } from '../config/enemies'
-import type { LevelConfig } from '../config/LevelConfig'
+import type { LevelConfig } from '../entities/spawners/ISpawner'
 
 export class Game extends Phaser.Scene {
   private hero!:           Hero
@@ -42,9 +42,8 @@ export class Game extends Phaser.Scene {
     this.hero        = new Hero(this, 200, Hero.spawnY())
     this.hud         = new HUD(this, this.hero.maxHp)
     this.collisions  = new CollisionManager(this, this.world.groundBody, this.hero)
+    this.collisions.registerHero()
     this.spawnerManager = new SpawnerManager(this, this.progression.runnerConfig, this.collisions)
-
-    this.physics.add.collider(this.hero.sprite, this.world.groundBody)
     this.applyChapter()
 
     this.mobileControls = new MobileControls(this)

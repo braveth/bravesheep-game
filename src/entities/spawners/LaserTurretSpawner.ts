@@ -4,9 +4,8 @@ import type { LaserTurretClass } from '../enemies/base/LaserTurret'
 import { LASER_TURRET } from '../../config/enemies'
 import { TEX } from '../../config/textures'
 import { WORLD } from '../../config/world'
-import type { ICollisionRegistrar } from '../interfaces/ICollisionRegistrar'
-import type { ISpawner } from '../interfaces/ISpawner'
-import type { LevelConfig } from '../../config/LevelConfig'
+import type { ICollisionRegistrar } from '../../managers/CollisionManager'
+import type { ISpawner, LevelConfig } from './ISpawner'
 
 export class LaserTurretSpawner<T extends LaserTurret> implements ISpawner {
   private entities: T[] = []

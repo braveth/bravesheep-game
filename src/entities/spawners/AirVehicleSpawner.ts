@@ -3,9 +3,8 @@ import { AirVehicle } from '../enemies/base/AirVehicle'
 import type { AirVehicleClass } from '../enemies/base/AirVehicle'
 import type { BaseAirdrop } from '../enemies/base/BaseAirdrop'
 import { WORLD } from '../../config/world'
-import type { ICollisionRegistrar } from '../interfaces/ICollisionRegistrar'
-import type { ISpawner } from '../interfaces/ISpawner'
-import type { LevelConfig } from '../../config/LevelConfig'
+import type { ICollisionRegistrar } from '../../managers/CollisionManager'
+import type { ISpawner, LevelConfig } from './ISpawner'
 
 export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
   private vehicles: T[]           = []
@@ -40,6 +39,7 @@ export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
     }
     // Tick payloads once; filter out done ones in the same pass
     this.payloads = this.payloads.filter(p => {
+      if (!p.sprite.body) return false  // destroyed by collision callback
       const done = p.tick(time, heroX, scrollSpeed)
       if (done) { p.sprite.destroy(); return false }
       return true
