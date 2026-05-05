@@ -34,12 +34,13 @@ export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
   tick(time: number, heroX: number, scrollSpeed: number, config: LevelConfig): void {
     for (const v of this.vehicles) {
       const idx = v.update(time, heroX, scrollSpeed, config.airDropCount, config.speedFactor)
-      if (idx !== -1) this.drop(v, heroX)
+      if (idx !== -1) this.drop(v, heroX, scrollSpeed)
     }
     this.drops = this.drops.filter(({ payload, shadow }) => {
       if (!payload.sprite.body) { shadow?.destroy(); return false }
       const done = payload.tick(time, heroX, scrollSpeed)
       if (done) { payload.sprite.destroy(); shadow?.destroy(); return false }
+      if (shadow) shadow.setX(payload.sprite.x)
       return true
     })
     this.purgeVehicles()
@@ -52,9 +53,9 @@ export class AirVehicleSpawner<T extends AirVehicle> implements ISpawner {
     this.drops    = []
   }
 
-  private drop(vehicle: T, heroX: number): void {
+  private drop(vehicle: T, heroX: number, scrollSpeed: number): void {
     const { payloadClass, payloadHasShadow } = this.Cls.spawnConfig
-    const payload = new payloadClass(this.payloadGroup, vehicle.sprite.x, vehicle.sprite.y + 20, heroX)
+    const payload = new payloadClass(this.payloadGroup, vehicle.sprite.x, vehicle.sprite.y + 20, heroX, scrollSpeed)
     const shadow  = payloadHasShadow
       ? this.scene.add.rectangle(vehicle.sprite.x, WORLD.GROUND_Y - 4, 20, 8, 0xff4400, 0.5).setDepth(4)
       : null

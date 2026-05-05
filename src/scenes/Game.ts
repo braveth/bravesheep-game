@@ -27,7 +27,7 @@ export class Game extends Phaser.Scene {
   private mobileControls?: MobileControls
   private devPanel?: DevPanel
   private ending = false
-  private readonly levelCfg: LevelConfig = { waveInterval: 0, turretShots: 0, airDropCount: 0, packCount: 0, packSpeedMult: 0, speedFactor: 0 }
+  private readonly levelCfg: LevelConfig = { waveInterval: 0, turretShots: 0, airDropCount: 0, packCount: 0, packSpeedMult: 0, speedFactor: 0, scrollSpeed: 0 }
 
   constructor() {
     super({ key: 'Game' })
@@ -83,6 +83,7 @@ export class Game extends Phaser.Scene {
       cfg.packCount     = this.difficulty.packCount
       cfg.packSpeedMult = this.difficulty.packSpeedMult
       cfg.speedFactor   = this.difficulty.speedFactor
+      cfg.scrollSpeed   = scrollSpeed
       this.spawnerManager.update(time, this.hero.sprite.x, effectiveScroll, cfg)
     } else if (this.bossSpawner) {
       this.bossSpawner.update(time)

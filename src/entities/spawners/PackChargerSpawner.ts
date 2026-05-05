@@ -2,6 +2,7 @@ import Phaser from 'phaser'
 import { PackCharger } from '../enemies/base/PackCharger'
 import type { PackChargerClass } from '../enemies/base/PackCharger'
 import { WORLD } from '../../config/world'
+import { ENEMY_SPEED_MAX } from '../../config/enemies'
 import type { ICollisionRegistrar } from '../../managers/CollisionManager'
 import type { ISpawner, LevelConfig } from './ISpawner'
 
@@ -30,7 +31,7 @@ export class PackChargerSpawner<T extends PackCharger> implements ISpawner {
       e.packTrigger  = trigger
       e.isPackLeader = i === 0
       e.chargeDelay  = (i * i) / Math.max(1, count - 1) * stagger * config.speedFactor
-      e.chargeSpeed  = Math.round(speed * config.packSpeedMult)
+      e.chargeSpeed  = Math.min(speed * (config.scrollSpeed / WORLD.INITIAL_SCROLL_SPEED), ENEMY_SPEED_MAX)
       this.entities.push(e)
     }
   }

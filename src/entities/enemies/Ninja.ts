@@ -18,7 +18,7 @@ export class Ninja extends BaseAirdrop {
   // Direction locked at drop time — never re-targets hero after first bounce
   private readonly moveDir: number
 
-  constructor(group: Phaser.Physics.Arcade.Group, x: number, dropY: number, heroX: number) {
+  constructor(group: Phaser.Physics.Arcade.Group, x: number, dropY: number, heroX: number, _scrollSpeed: number) {
     super()
     // +1 = move right (hero is right of drop), -1 = move left
     this.moveDir = heroX >= x ? 1 : -1

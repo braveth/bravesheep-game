@@ -8,6 +8,7 @@ export type LevelConfig = {
   packCount:     number
   packSpeedMult: number
   speedFactor:   number
+  scrollSpeed:   number
 }
 
 export interface ISpawner {

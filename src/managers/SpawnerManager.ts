@@ -6,9 +6,10 @@ import type { IRunnerConfig, EnemyClass } from '../chapters/IChapter'
 export class SpawnerManager {
   private readonly spawnerMap:   Map<EnemyClass, ISpawner>
   private readonly allSpawners:  ISpawner[]
+  private waveQueue:    EnemyClass[] = []
   private readonly enemyClasses: readonly EnemyClass[]
-  private nextWaveTime  = 0
-  private lastWaveClass: EnemyClass | null = null
+
+  private nextWaveTime = 0
 
   constructor(
     private readonly scene: Phaser.Scene,
@@ -33,17 +34,18 @@ export class SpawnerManager {
 
   clear(): void {
     for (const s of this.allSpawners) s.clear()
-    this.lastWaveClass = null
-    this.nextWaveTime  = 0
+    this.waveQueue    = []
+    this.nextWaveTime = 0
   }
 
   private trySpawnWave(time: number, config: LevelConfig, heroX: number): void {
     if (time < this.nextWaveTime) return
     this.nextWaveTime = time + config.waveInterval
 
-    const candidates   = this.enemyClasses.filter(t => t !== this.lastWaveClass)
-    const chosen       = Phaser.Utils.Array.GetRandom(candidates as EnemyClass[]) as EnemyClass
-    this.lastWaveClass = chosen
+    if (this.waveQueue.length === 0) {
+      this.waveQueue = Phaser.Utils.Array.Shuffle([...this.enemyClasses] as EnemyClass[])
+    }
+    const chosen = this.waveQueue.shift()!
     this.spawnerMap.get(chosen)?.spawn(config, heroX)
   }
 }

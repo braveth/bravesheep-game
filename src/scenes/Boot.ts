@@ -433,24 +433,26 @@ export class Boot extends Phaser.Scene {
   private makeBombTexture(): void {
     const g = this.make.graphics({ x: 0, y: 0 }, false)
 
-    // Body
-    g.fillStyle(0x222222)
-    g.fillEllipse(8, 12, 14, 16)
+    // Body (horizontal cylinder, nose pointing right)
+    g.fillStyle(0x556644)
+    g.fillRoundedRect(1, 2, 14, 6, 2)
 
-    // Nose cone
-    g.fillStyle(0x333333)
-    g.fillTriangle(3, 6, 13, 6, 8, 0)
+    // Nose cone (right)
+    g.fillStyle(0x334422)
+    g.fillTriangle(14, 2, 14, 8, 20, 5)
 
-    // Tail fins
-    g.fillStyle(0x444444)
-    g.fillTriangle(2, 16, 6, 12, 2, 20)
-    g.fillTriangle(14, 16, 10, 12, 14, 20)
+    // Top tail fin
+    g.fillStyle(0x334422)
+    g.fillTriangle(0, 0, 4, 2, 4, 4)
+
+    // Bottom tail fin
+    g.fillTriangle(0, 10, 4, 8, 4, 6)
 
     // Warning stripe
-    g.fillStyle(0xffaa00)
-    g.fillRect(3, 9, 10, 3)
+    g.fillStyle(0xffcc00)
+    g.fillRect(7, 2, 2, 6)
 
-    g.generateTexture(TEX.BOMB, 16, 20)
+    g.generateTexture(TEX.BOMB, 20, 10)
     g.destroy()
   }
 

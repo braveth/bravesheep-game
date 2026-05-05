@@ -1,7 +1,15 @@
 // Enemy constants — tweak here, not in entity code.
 
+/** Shared safe-distance threshold: enemies won't fire/home within this range. */
+export const HERO_SAFE_DISTANCE = 80   // px
+
+/** Shared speed range for scaling enemies (wolves, limos, missiles). */
+export const ENEMY_SPEED_MIN = 300   // px/s at base scroll speed
+export const ENEMY_SPEED_MAX = 500   // px/s hard cap
+
 export const WOLF = {
-  SPEED:           300,    // fast charge speed (no jumping)
+  SPEED:           ENEMY_SPEED_MIN,
+  SPEED_MAX:       ENEMY_SPEED_MAX,
   HP:                1,
   SPRITE_W:         48,
   SPRITE_H:         36,
@@ -21,7 +29,7 @@ export const FAT_CAT = {
   SPRITE_H:         40,
   HIT_W:            24,
   HIT_H:            34,
-  MIN_FIRE_DIST:    80,    // px -- won't fire if hero is closer than this
+  MIN_FIRE_DIST:    HERO_SAFE_DISTANCE,
   SPAWN_OFFSET_X:   20,
 } as const
 
@@ -77,15 +85,13 @@ export const AIRPLANE = {
 } as const
 
 export const BOMB = {
-  SPRITE_W:         16,
-  SPRITE_H:         20,
-  HIT_W:            12,
-  HIT_H:            16,
-  JUMP_VELOCITY:  -580,    // bouncing arc velocity
-  GRAVITY:        1000,
-  MAX_BOUNCES:       5,    // despawn after this many bounces without hitting hero
-  MAX_FALL_SPEED:  900,
-  BOUNCE:         0.65,   // Phaser bounce coefficient on ground contact
+  SPRITE_W:              20,
+  SPRITE_H:              10,
+  HIT_W:                 16,
+  HIT_H:                  8,
+  SPEED:                ENEMY_SPEED_MIN,   // homing missile base speed (px/s)
+  SPEED_MAX:            ENEMY_SPEED_MAX,   // hard cap
+  HERO_SAFE_DISTANCE,         // stop homing once within this distance of hero
 } as const
 
 // Urban ground enemies: Limo (pack charger) + Bus (turret)
@@ -95,7 +101,8 @@ export const LIMO = {
   SPRITE_H:         36,
   HIT_W:            88,
   HIT_H:            28,
-  SPEED:           340,    // fast charge (car)
+  SPEED:           ENEMY_SPEED_MIN,
+  SPEED_MAX:       ENEMY_SPEED_MAX,
   PACK_MIN:          3,
   PACK_MAX:          3,
   PACK_STAGGER:    400,    // ms -- chargeDelay = i2 * STAGGER (quadratic spacing)
@@ -109,7 +116,7 @@ export const BUS = {
   HIT_W:            72,
   HIT_H:            40,
   // Shares FAT_CAT laser constants (same gameplay behaviour)
-  MIN_FIRE_DIST:    80,    // px -- won't fire if hero is closer than this
+  MIN_FIRE_DIST:    HERO_SAFE_DISTANCE,    // px -- won't fire if hero is closer than this
   SPAWN_OFFSET_X:   24,
 } as const
 

@@ -6,7 +6,7 @@ import { AirVehicleSpawner } from '../../spawners/AirVehicleSpawner'
 import { AIR_VEHICLE } from '../../../config/enemies'
 
 export interface IAirDropSpawnConfig {
-  payloadClass:        new (group: Phaser.Physics.Arcade.Group, x: number, y: number, heroX: number) => BaseAirdrop
+  payloadClass:        new (group: Phaser.Physics.Arcade.Group, x: number, y: number, heroX: number, scrollSpeed: number) => BaseAirdrop
   payloadIsProjectile: boolean  // true = damageAndDestroy on contact, false = damage only
   payloadHasShadow:    boolean
 }
